@@ -204,7 +204,6 @@
             transition: background 0.15s;
         }
         .legend-item:hover { background: var(--card2); }
-        .legend-item.active { background: var(--card2); }
         .legend-dot {
             width: 10px;
             height: 10px;
@@ -489,6 +488,7 @@
         }
         .settings-icon svg { width: 18px; height: 18px; }
         .settings-label { font-size: 15px; }
+        .settings-desc { font-size: 12px; color: var(--text2); margin-top: 2px; }
         .settings-value { 
             font-size: 15px; 
             color: var(--text2);
@@ -696,9 +696,11 @@
         .modal-actions {
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
         }
         .modal-btn {
             flex: 1;
+            min-width: calc(50% - 5px);
             background: var(--card2);
             border: 1px solid var(--border);
             border-radius: 12px;
@@ -717,6 +719,10 @@
             background: #fff;
             color: #000;
             border-color: #fff;
+        }
+        .modal-btn.find-similar {
+            background: var(--blue);
+            border-color: var(--blue);
         }
         
         /* Empty */
@@ -748,7 +754,7 @@
 </head>
 <body>
     <div class="app">
-        <!-- HOME (Insights-style) -->
+        <!-- HOME -->
         <div class="screen" id="home">
             <div class="header">
                 <div class="header-row">
@@ -829,7 +835,7 @@
             </div>
             
             <div class="section-header">
-                <span class="section-title">AI Integration</span>
+                <span class="section-title">AI Classification</span>
             </div>
             <div class="settings-group">
                 <div class="settings-item">
@@ -837,9 +843,12 @@
                         <div class="settings-icon" style="background: var(--purple);">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 0-4 4v4a4 4 0 0 0 8 0V6a4 4 0 0 0-4-4z"/><path d="M12 14c-4.418 0-8 1.79-8 4v2h16v-2c0-2.21-3.582-4-8-4z"/></svg>
                         </div>
-                        <span class="settings-label">OpenAI API Key</span>
+                        <div>
+                            <div class="settings-label">OpenAI API Key</div>
+                            <div class="settings-desc">Used only when adding items</div>
+                        </div>
                     </div>
-                    <input type="password" class="settings-input" id="api-key" placeholder="sk-..." oninput="saveApiKey()">
+                    <input type="password" class="settings-input" id="api-key" placeholder="sk-..." oninput="saveApiKey()" style="width:140px">
                 </div>
                 <div class="settings-item">
                     <div class="settings-left">
@@ -865,30 +874,52 @@
             </div>
             
             <div class="section-header">
+                <span class="section-title">Product Search</span>
+            </div>
+            <div class="settings-group">
+                <div class="settings-item">
+                    <div class="settings-left">
+                        <div class="settings-icon" style="background: var(--orange);">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg>
+                        </div>
+                        <div>
+                            <div class="settings-label">Find Similar Products</div>
+                            <div class="settings-desc">Search web for matching items</div>
+                        </div>
+                    </div>
+                    <div class="toggle on" id="find-similar-toggle" onclick="this.classList.toggle('on');saveSettings()"></div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-left">
+                        <div class="settings-icon" style="background: var(--cyan);">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c-1.657 0-3-4.03-3-9s1.343-9 3-9m0 18c1.657 0 3-4.03 3-9s-1.343-9-3-9m-9 9a9 9 0 0 1 9-9"/></svg>
+                        </div>
+                        <span class="settings-label">Search Engine</span>
+                    </div>
+                    <select class="settings-input" id="search-engine" onchange="saveSettings()" style="width:130px">
+                        <option value="google">Google Lens</option>
+                        <option value="bing">Bing Visual</option>
+                        <option value="tineye">TinEye</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="section-header">
                 <span class="section-title">Integrations</span>
             </div>
             <div class="settings-group">
                 <div class="settings-item">
                     <div class="settings-left">
                         <div class="settings-icon" style="background: var(--blue);">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                         </div>
                         <span class="settings-label">Calendar</span>
                     </div>
-                    <select class="settings-input" id="calendar-type" onchange="saveSettings()" style="width:140px">
+                    <select class="settings-input" id="calendar-type" onchange="saveSettings()" style="width:130px">
                         <option value="native">Device Calendar</option>
                         <option value="google">Google Calendar</option>
                         <option value="apple">Apple Calendar</option>
                     </select>
-                </div>
-                <div class="settings-item">
-                    <div class="settings-left">
-                        <div class="settings-icon" style="background: var(--orange);">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                        </div>
-                        <span class="settings-label">In-App Reminders</span>
-                    </div>
-                    <div class="toggle on" id="reminder-toggle" onclick="this.classList.toggle('on');saveSettings()"></div>
                 </div>
             </div>
             
@@ -942,11 +973,7 @@
             <div class="settings-group">
                 <div class="settings-item">
                     <span class="settings-label">Version</span>
-                    <span class="settings-value">2.2.0</span>
-                </div>
-                <div class="settings-item">
-                    <span class="settings-label">Auto-capture</span>
-                    <span class="settings-value" style="color:var(--text3)">Native app only</span>
+                    <span class="settings-value">2.3.0</span>
                 </div>
             </div>
         </div>
@@ -988,13 +1015,7 @@
                 <div class="modal-type" id="modal-type"></div>
                 <div class="modal-title" id="modal-title"></div>
                 <div class="modal-subtitle" id="modal-subtitle"></div>
-                <div class="modal-actions">
-                    <button class="modal-btn" onclick="openReminder()">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                        Remind
-                    </button>
-                    <button class="modal-btn primary" onclick="closeModal()">Done</button>
-                </div>
+                <div class="modal-actions" id="modal-actions"></div>
             </div>
         </div>
         
@@ -1015,44 +1036,18 @@ settings.exchangeRate = settings.exchangeRate || 35.5;
 settings.baseCurrency = settings.baseCurrency || 'USD';
 settings.useAI = settings.useAI || false;
 settings.calendarType = settings.calendarType || 'native';
+settings.findSimilar = settings.findSimilar !== false;
+settings.searchEngine = settings.searchEngine || 'google';
 
-// Type definitions
+// Types
 const TYPES = {
-    receipt: { 
-        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 3v5h5M16 13H8M16 17H8M10 9H8"/></svg>`,
-        label: 'Receipt',
-        color: '#22c55e'
-    },
-    bill: { 
-        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>`,
-        label: 'Bill',
-        color: '#ef4444'
-    },
-    product: { 
-        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V6l-3-4H6zM3 6h18M16 10a4 4 0 1 1-8 0"/></svg>`,
-        label: 'Want',
-        color: '#f97316'
-    },
-    info: { 
-        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>`,
-        label: 'Info',
-        color: '#3b82f6'
-    },
-    idea: { 
-        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.9V17h8v-2.1A7 7 0 0 0 12 2z"/></svg>`,
-        label: 'Idea',
-        color: '#eab308'
-    },
-    transfer: { 
-        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m17 2 4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"/></svg>`,
-        label: 'Transfer',
-        color: '#a855f7'
-    },
-    screenshot: { 
-        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>`,
-        label: 'Screenshot',
-        color: '#6b7280'
-    }
+    receipt: { icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 3v5h5M16 13H8M16 17H8M10 9H8"/></svg>`, label: 'Receipt', color: '#22c55e' },
+    bill: { icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>`, label: 'Bill', color: '#ef4444' },
+    product: { icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V6l-3-4H6zM3 6h18M16 10a4 4 0 1 1-8 0"/></svg>`, label: 'Want', color: '#f97316' },
+    info: { icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>`, label: 'Info', color: '#3b82f6' },
+    idea: { icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.9V17h8v-2.1A7 7 0 0 0 12 2z"/></svg>`, label: 'Idea', color: '#eab308' },
+    transfer: { icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m17 2 4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"/></svg>`, label: 'Transfer', color: '#a855f7' },
+    screenshot: { icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>`, label: 'Screenshot', color: '#6b7280' }
 };
 
 const FOLDERS = [
@@ -1065,10 +1060,10 @@ const FOLDERS = [
 ];
 
 // Currency
-function convertCurrency(amount, fromCurrency) {
+function convertCurrency(amount, from) {
     const rate = parseFloat(settings.exchangeRate) || 35.5;
-    if (fromCurrency === 'THB' && settings.baseCurrency === 'USD') return amount / rate;
-    if (fromCurrency === 'USD' && settings.baseCurrency === 'THB') return amount * rate;
+    if (from === 'THB' && settings.baseCurrency === 'USD') return amount / rate;
+    if (from === 'USD' && settings.baseCurrency === 'THB') return amount * rate;
     return amount;
 }
 
@@ -1077,7 +1072,7 @@ function formatCurrency(amount, currency) {
     return (symbols[currency] || '') + amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-// AI Classification
+// AI Classification (only runs on add)
 async function classifyWithAI(imageBase64) {
     const apiKey = localStorage.getItem('snapledger_apikey');
     if (!apiKey) return null;
@@ -1085,57 +1080,44 @@ async function classifyWithAI(imageBase64) {
     try {
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
-            },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
             body: JSON.stringify({
                 model: 'gpt-4o-mini',
                 messages: [{
                     role: 'user',
                     content: [
-                        {
-                            type: 'text',
-                            text: `Analyze this screenshot. Return JSON only:
-{"type":"receipt|bill|product|transfer|idea|info|screenshot","title":"short title","amount":number|null,"currency":"THB|USD|EUR"|null,"confidence":0.9}
-
-Types: receipt=purchases, bill=utility bills, product=items to buy, transfer=bank transfers, idea=concepts, info=reference, screenshot=general`
-                        },
+                        { type: 'text', text: `Analyze screenshot. Return JSON only: {"type":"receipt|bill|product|transfer|idea|info|screenshot","title":"short title","amount":number|null,"currency":"THB|USD"|null}` },
                         { type: 'image_url', image_url: { url: imageBase64 } }
                     ]
                 }],
                 max_tokens: 200
             })
         });
-        
         const data = await response.json();
         if (data.error) return null;
         const match = data.choices[0].message.content.match(/\{[\s\S]*\}/);
         return match ? JSON.parse(match[0]) : null;
-    } catch (e) {
-        return null;
-    }
+    } catch (e) { return null; }
 }
 
 function mockClassify() {
     const types = Object.keys(TYPES);
     const typeId = types[Math.floor(Math.random() * types.length)];
     const titles = {
-        receipt: ['Grab Food', 'Starbucks', '7-Eleven', 'Central'],
-        bill: ['Electric Bill', 'Internet AIS', 'TRUE Mobile'],
+        receipt: ['Grab Food', 'Starbucks', '7-Eleven'],
+        bill: ['Electric Bill', 'Internet AIS'],
         product: ['Nike Shoes', 'MacBook Stand', 'Earbuds'],
-        transfer: ['SCB Transfer', 'PromptPay', 'K PLUS'],
-        idea: ['App concept', 'Business idea', 'Design inspo'],
-        info: ['Tutorial', 'Reference', 'Documentation'],
-        screenshot: ['Screenshot', 'Capture']
+        transfer: ['SCB Transfer', 'PromptPay'],
+        idea: ['App concept', 'Business idea'],
+        info: ['Tutorial', 'Reference'],
+        screenshot: ['Screenshot']
     };
     const hasAmount = ['receipt', 'bill', 'product', 'transfer'].includes(typeId);
     return {
         type: typeId,
         title: titles[typeId][Math.floor(Math.random() * titles[typeId].length)],
         amount: hasAmount ? Math.floor(Math.random() * 2000) + 50 : null,
-        currency: 'THB',
-        confidence: 0.85 + Math.random() * 0.14
+        currency: 'THB'
     };
 }
 
@@ -1155,9 +1137,36 @@ async function processImage(dataUrl) {
         title: classification.title,
         amountOriginal: classification.amount,
         currencyOriginal: classification.currency || 'THB',
-        amountConverted,
-        confidence: classification.confidence
+        amountConverted
     };
+}
+
+// Find Similar (reverse image search)
+function findSimilar() {
+    const item = items.find(i => i.id === currentItemId);
+    if (!item) return;
+    
+    const engine = settings.searchEngine || 'google';
+    
+    // For web demo, we'll open Google Lens with the image
+    // In native app, would upload to reverse image search API
+    if (engine === 'google') {
+        // Google Lens URL - opens image search
+        const url = `https://lens.google.com/uploadbyurl?url=${encodeURIComponent(item.uri)}`;
+        // Fallback: open Google Images
+        window.open('https://images.google.com/', '_blank');
+        toast('Opening Google Lens...');
+    } else if (engine === 'bing') {
+        window.open('https://www.bing.com/visualsearch', '_blank');
+        toast('Opening Bing Visual Search...');
+    } else {
+        window.open('https://tineye.com/', '_blank');
+        toast('Opening TinEye...');
+    }
+    
+    // Note: In native app, you'd upload the image directly
+    // For now we inform user to upload manually
+    setTimeout(() => toast('Upload your screenshot to search'), 1500);
 }
 
 // UI
@@ -1203,6 +1212,26 @@ function openModal(itemId) {
         subtitle = item.currencyOriginal === settings.baseCurrency ? orig : `${orig} → ${conv}`;
     }
     document.getElementById('modal-subtitle').textContent = subtitle;
+    
+    // Dynamic actions based on type
+    let actions = '';
+    
+    // Find Similar button for products (if enabled)
+    if (item.typeId === 'product' && settings.findSimilar) {
+        actions += `<button class="modal-btn find-similar" onclick="findSimilar()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            Find Similar
+        </button>`;
+    }
+    
+    actions += `<button class="modal-btn" onclick="openReminder()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        Remind
+    </button>`;
+    
+    actions += `<button class="modal-btn primary" onclick="closeModal()">Done</button>`;
+    
+    document.getElementById('modal-actions').innerHTML = actions;
     document.getElementById('modal').classList.add('show');
 }
 
@@ -1227,42 +1256,21 @@ function openReminder() {
     const title = encodeURIComponent(`SnapLedger: ${item.title}`);
     const details = encodeURIComponent(`Category: ${item.type?.label || 'Unknown'}${item.amountConverted ? '\nValue: ' + formatCurrency(item.amountConverted, settings.baseCurrency) : ''}`);
     
-    // Try to open native calendar
     const calType = settings.calendarType || 'native';
-    let url;
     
     if (calType === 'google') {
-        url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}`;
-    } else if (calType === 'apple' || calType === 'native') {
-        // iOS calendar URL scheme
-        const date = new Date(Date.now() + 86400000); // Tomorrow
-        const dateStr = date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-        url = `webcal://p01-caldav.icloud.com/calendar/v1/add?title=${title}&notes=${details}&startDate=${dateStr}`;
-        
-        // Fallback: try data: URL for .ics file
-        if (!/iPhone|iPad|Mac/i.test(navigator.userAgent)) {
-            const ics = `BEGIN:VCALENDAR
-VERSION:2.0
-BEGIN:VEVENT
-DTSTART:${dateStr}
-SUMMARY:${item.title}
-DESCRIPTION:${item.type?.label || ''} - ${item.amountConverted ? formatCurrency(item.amountConverted, settings.baseCurrency) : 'No value'}
-END:VEVENT
-END:VCALENDAR`;
-            const blob = new Blob([ics], { type: 'text/calendar' });
-            url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'reminder.ics';
-            a.click();
-            toast('Calendar file downloaded');
-            return;
-        }
+        window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}`, '_blank');
     } else {
-        url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}`;
+        // Download .ics file
+        const date = new Date(Date.now() + 86400000);
+        const dateStr = date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+        const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${dateStr}\nSUMMARY:${item.title}\nDESCRIPTION:${item.type?.label || ''}\nEND:VEVENT\nEND:VCALENDAR`;
+        const blob = new Blob([ics], { type: 'text/calendar' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'reminder.ics';
+        a.click();
     }
-    
-    window.open(url, '_blank');
     toast('Opening calendar...');
 }
 
@@ -1294,6 +1302,8 @@ function saveSettings() {
     settings.exchangeRate = parseFloat(document.getElementById('exchange-rate').value) || 35.5;
     settings.baseCurrency = document.getElementById('base-currency').value;
     settings.calendarType = document.getElementById('calendar-type').value;
+    settings.findSimilar = document.getElementById('find-similar-toggle').classList.contains('on');
+    settings.searchEngine = document.getElementById('search-engine').value;
     localStorage.setItem('snapledger_settings', JSON.stringify(settings));
     render();
 }
@@ -1304,7 +1314,9 @@ function loadSettings() {
     document.getElementById('exchange-rate').value = settings.exchangeRate;
     document.getElementById('base-currency').value = settings.baseCurrency;
     document.getElementById('calendar-type').value = settings.calendarType || 'native';
+    document.getElementById('search-engine').value = settings.searchEngine || 'google';
     if (settings.useAI) document.getElementById('use-ai-toggle').classList.add('on');
+    if (!settings.findSimilar) document.getElementById('find-similar-toggle').classList.remove('on');
     updateApiStatus();
 }
 
@@ -1345,20 +1357,17 @@ document.querySelectorAll('.tab').forEach(t => {
     t.onclick = () => switchTab(t.dataset.tab);
 });
 
-// Generate pie chart CSS
+// Pie chart
 function generatePieGradient(data) {
     if (!data.length) return 'conic-gradient(var(--card2) 0deg 360deg)';
-    
     let gradient = 'conic-gradient(';
-    let currentAngle = 0;
-    
+    let angle = 0;
     data.forEach((d, i) => {
-        const angle = (d.count / items.length) * 360;
-        gradient += `${d.color} ${currentAngle}deg ${currentAngle + angle}deg`;
+        const a = (d.count / items.length) * 360;
+        gradient += `${d.color} ${angle}deg ${angle + a}deg`;
         if (i < data.length - 1) gradient += ', ';
-        currentAngle += angle;
+        angle += a;
     });
-    
     return gradient + ')';
 }
 
@@ -1366,28 +1375,22 @@ function generatePieGradient(data) {
 function render() {
     const valued = items.filter(i => i.amountConverted);
     const total = valued.reduce((s, i) => s + i.amountConverted, 0);
-    const week = total * 0.35;
     
-    // Home stats
     document.getElementById('home-total').textContent = formatCurrency(total, settings.baseCurrency);
     document.getElementById('home-count').textContent = `${items.length} screenshot${items.length !== 1 ? 's' : ''}`;
-    document.getElementById('home-week').textContent = formatCurrency(week, settings.baseCurrency);
+    document.getElementById('home-week').textContent = formatCurrency(total * 0.35, settings.baseCurrency);
     document.getElementById('home-items').textContent = items.length;
     
-    // Pie chart
+    // Pie
     const typeData = [];
-    const typeCounts = {};
-    items.forEach(i => typeCounts[i.typeId] = (typeCounts[i.typeId] || 0) + 1);
-    
-    Object.entries(typeCounts)
-        .sort((a, b) => b[1] - a[1])
-        .forEach(([id, count]) => {
-            typeData.push({ id, count, color: TYPES[id]?.color || '#666', label: TYPES[id]?.label || id });
-        });
+    const counts = {};
+    items.forEach(i => counts[i.typeId] = (counts[i.typeId] || 0) + 1);
+    Object.entries(counts).sort((a, b) => b[1] - a[1]).forEach(([id, count]) => {
+        typeData.push({ id, count, color: TYPES[id]?.color || '#666', label: TYPES[id]?.label || id });
+    });
     
     document.getElementById('pie-chart').style.background = generatePieGradient(typeData);
     document.getElementById('pie-total').textContent = items.length;
-    
     document.getElementById('pie-legend').innerHTML = typeData.slice(0, 5).map(d => `
         <div class="legend-item" onclick="activeFilter='${d.id}';switchTab('browse');render()">
             <div class="legend-dot" style="background:${d.color}"></div>
@@ -1396,7 +1399,7 @@ function render() {
         </div>
     `).join('') || '<div style="color:var(--text3);font-size:13px;padding:8px">No data</div>';
     
-    // Recent items (home)
+    // Recent
     document.getElementById('home-recent').innerHTML = items.slice(0, 5).map(i => `
         <div class="list-item" onclick="openModal(${i.id})">
             <img src="${i.uri}" class="list-thumb">
@@ -1411,16 +1414,16 @@ function render() {
         </div>
     `).join('') || '<div class="empty"><div class="empty-title">No screenshots yet</div><div class="empty-text">Tap "Add" to get started</div></div>';
     
-    // Browse filters
+    // Filters
     document.getElementById('filters').innerHTML = `
         <div class="filter ${activeFilter === 'all' ? 'active' : ''}" onclick="activeFilter='all';render()">All ${items.length}</div>
         ${typeData.map(d => `<div class="filter ${activeFilter === d.id ? 'active' : ''}" onclick="activeFilter='${d.id}';render()">${d.label} ${d.count}</div>`).join('')}
     `;
     
-    // Browse grid
+    // Browse
     const q = document.getElementById('search').value.toLowerCase();
     let filtered = items;
-    if (q) filtered = items.filter(i => (i.title || '').toLowerCase().includes(q) || (i.type?.label || '').toLowerCase().includes(q));
+    if (q) filtered = items.filter(i => (i.title || '').toLowerCase().includes(q));
     if (activeFilter !== 'all') filtered = filtered.filter(i => i.typeId === activeFilter);
     
     document.getElementById('browse-content').innerHTML = filtered.length ? `<div class="grid">${filtered.map(i => `
@@ -1434,15 +1437,10 @@ function render() {
                     <span class="grid-time">${timeAgo(i.time)}</span>
                 </div>
             </div>
-            ${i.amountOriginal && i.currencyOriginal !== settings.baseCurrency ? `<div class="grid-badge">${formatCurrency(i.amountOriginal, i.currencyOriginal)}</div>` : ''}
         </div>
-    `).join('')}</div>` : `<div class="empty">
-        <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></div>
-        <div class="empty-title">${q ? 'No results' : 'No screenshots'}</div>
-        <div class="empty-text">${q ? 'Try different keywords' : 'Add some screenshots'}</div>
-    </div>`;
+    `).join('')}</div>` : '<div class="empty"><div class="empty-title">No screenshots</div></div>';
     
-    // Library folders
+    // Folders
     document.getElementById('folders').innerHTML = FOLDERS.map(f => {
         const count = items.filter(i => f.types.includes(i.typeId)).length;
         const total = items.filter(i => f.types.includes(i.typeId) && i.amountConverted).reduce((s, i) => s + i.amountConverted, 0);
