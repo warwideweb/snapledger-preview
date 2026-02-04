@@ -137,7 +137,7 @@
         .tab:active{background:rgba(255,255,255,0.05)}
         .tab svg{width:24px;height:24px;color:var(--text3);stroke-width:1.8;margin-bottom:4px}
         .tab span{font-size:10px;font-weight:500;color:var(--text3)}
-        .tab.active svg{color:var(--text)}.tab.active span{color:var(--text)}
+        .tab.active svg{color:var(--orange)}.tab.active span{color:var(--orange)}
         .toast{position:fixed;bottom:110px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card);border:1px solid var(--border);padding:14px 24px;border-radius:14px;font-size:14px;font-weight:500;opacity:0;transition:all 0.3s;z-index:999;display:flex;align-items:center;gap:10px;max-width:90%}
         .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
         .modal{position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:1000;display:none;flex-direction:column}
@@ -807,9 +807,13 @@ document.getElementById('file-input').addEventListener('change',async e=>{
                 rd.readAsDataURL(file);
             });
             const item=await processImage(dataUrl);
-            if(item.isDuplicate)dupes++;
-            items.unshift(item);
-            processed++;
+            if(item.isDuplicate){
+                dupes++;
+                // Skip duplicates - don't add them
+            }else{
+                items.unshift(item);
+                processed++;
+            }
             render();
             // Small delay to prevent UI freeze
             await new Promise(r=>setTimeout(r,50));
@@ -819,7 +823,7 @@ document.getElementById('file-input').addEventListener('change',async e=>{
     }
     showProgress(files.length,files.length);
     saveItems();
-    toast(`${processed} added${dupes?` (${dupes} dupe${dupes>1?'s':''})`:''}`)
+    toast(`${processed} added${dupes?` (${dupes} duplicate${dupes>1?'s':''} skipped)`:''}`)
     e.target.value='';
 });
 
