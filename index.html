@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SnapLedger - Preview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --surface: #141414;
+            --border: #262626;
+            --text: #ffffff;
+            --muted: #737373;
+            --accent: #3b82f6;
+            --green: #10b981;
+            --orange: #f59e0b;
+            --purple: #8b5cf6;
+            --pink: #ec4899;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Inter', -apple-system, sans-serif; 
+            background: #1a1a2e; 
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .phone {
+            width: 375px;
+            height: 812px;
+            background: var(--bg);
+            border-radius: 40px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        
+        .notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 30px;
+            background: #000;
+            border-radius: 0 0 20px 20px;
+            z-index: 100;
+        }
+        
+        .screen {
+            height: calc(100% - 84px);
+            overflow-y: auto;
+            padding-top: 50px;
+        }
+        
+        .tab-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 84px;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            padding-top: 12px;
+        }
+        
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+        .tab-item.active { opacity: 1; }
+        .tab-item span { font-size: 24px; margin-bottom: 4px; }
+        .tab-item small { font-size: 10px; color: var(--muted); }
+        .tab-item.active small { color: var(--text); }
+        
+        .header {
+            padding: 16px 20px;
+        }
+        .header h1 {
+            font-size: 28px;
+            font-weight: 300;
+            color: var(--text);
+        }
+        .header-sub {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+        
+        /* Screen specific styles */
+        .screen-content { display: none; }
+        .screen-content.active { display: block; }
+        
+        /* Inbox */
+        .inbox-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding: 0 16px;
+        }
+        .inbox-card {
+            background: var(--surface);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .inbox-img {
+            height: 140px;
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+        .inbox-info {
+            padding: 12px;
+        }
+        .inbox-type {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+        .inbox-type span { font-size: 14px; }
+        .inbox-type small { font-size: 12px; color: var(--text); font-weight: 500; }
+        .confidence-bar {
+            height: 3px;
+            background: var(--border);
+            border-radius: 2px;
+            margin-bottom: 6px;
+        }
+        .confidence-fill {
+            height: 100%;
+            background: var(--green);
+            border-radius: 2px;
+        }
+        .inbox-time {
+            font-size: 11px;
+            color: var(--muted);
+        }
+        
+        /* Library */
+        .folder-list {
+            padding: 0 16px;
+        }
+        .folder-item {
+            display: flex;
+            align-items: center;
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 8px;
+        }
+        .folder-icon {
+            font-size: 24px;
+            margin-right: 14px;
+        }
+        .folder-info { flex: 1; }
+        .folder-name {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text);
+        }
+        .folder-path {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+        .folder-count {
+            background: var(--border);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            color: var(--text);
+        }
+        
+        /* Spending */
+        .summary-row {
+            display: flex;
+            gap: 12px;
+            padding: 0 16px;
+            margin-bottom: 24px;
+        }
+        .summary-card {
+            flex: 1;
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 16px;
+        }
+        .summary-label {
+            font-size: 11px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        .summary-amount {
+            font-size: 24px;
+            font-weight: 300;
+            color: var(--text);
+        }
+        
+        .section {
+            padding: 0 16px;
+            margin-bottom: 24px;
+        }
+        .section-title {
+            font-size: 11px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+        
+        .chart-container {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 16px;
+        }
+        .category-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .category-label {
+            display: flex;
+            align-items: center;
+            width: 80px;
+        }
+        .category-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .category-name {
+            font-size: 11px;
+            color: var(--text);
+        }
+        .category-bar-bg {
+            flex: 1;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            margin: 0 12px;
+        }
+        .category-bar {
+            height: 100%;
+            border-radius: 3px;
+        }
+        .category-amount {
+            font-size: 11px;
+            color: var(--muted);
+            width: 60px;
+            text-align: right;
+        }
+        
+        .trend-chart {
+            display: flex;
+            height: 80px;
+            align-items: flex-end;
+            gap: 2px;
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 16px;
+        }
+        .trend-bar {
+            flex: 1;
+            background: var(--accent);
+            border-radius: 2px;
+            min-height: 4px;
+        }
+        
+        /* Settings */
+        .setting-group {
+            padding: 0 16px;
+            margin-bottom: 24px;
+        }
+        .setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 8px;
+        }
+        .setting-info { flex: 1; }
+        .setting-label {
+            font-size: 14px;
+            color: var(--text);
+            font-weight: 500;
+        }
+        .setting-desc {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+        .toggle {
+            width: 48px;
+            height: 28px;
+            background: var(--border);
+            border-radius: 14px;
+            position: relative;
+            cursor: pointer;
+        }
+        .toggle.on { background: var(--accent); }
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.2s;
+        }
+        .toggle.on::after {
+            transform: translateX(20px);
+        }
+        
+        .segments {
+            display: flex;
+            background: var(--surface);
+            border-radius: 10px;
+            padding: 4px;
+            margin-bottom: 16px;
+        }
+        .segment {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--muted);
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .segment.active {
+            background: var(--accent);
+            color: white;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: rgba(16,185,129,0.15);
+            color: var(--green);
+            font-size: 10px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Preview label */
+        .preview-badge {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: var(--accent);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        @media (max-width: 420px) {
+            body { padding: 0; }
+            .phone {
+                width: 100%;
+                height: 100vh;
+                border-radius: 0;
+            }
+            .preview-badge { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-badge">📱 SnapLedger Preview</div>
+    
+    <div class="phone">
+        <div class="notch"></div>
+        
+        <div class="screen">
+            <!-- INBOX -->
+            <div class="screen-content active" id="screen-inbox">
+                <div class="header">
+                    <h1>Inbox</h1>
+                    <div class="header-sub">4 new screenshots</div>
+                </div>
+                <div class="inbox-grid">
+                    <div class="inbox-card">
+                        <div class="inbox-img">🧾</div>
+                        <div class="inbox-info">
+                            <div class="inbox-type"><span>🧾</span><small>Receipt</small></div>
+                            <div class="confidence-bar"><div class="confidence-fill" style="width:85%"></div></div>
+                            <div class="inbox-time">12:34 PM</div>
+                        </div>
+                    </div>
+                    <div class="inbox-card">
+                        <div class="inbox-img" style="background:linear-gradient(135deg,#3b1e5f,#1a0f2e)">💸</div>
+                        <div class="inbox-info">
+                            <div class="inbox-type"><span>💸</span><small>Transfer</small></div>
+                            <div class="confidence-bar"><div class="confidence-fill" style="width:92%"></div></div>
+                            <div class="inbox-time">11:20 AM</div>
+                        </div>
+                    </div>
+                    <div class="inbox-card">
+                        <div class="inbox-img" style="background:linear-gradient(135deg,#5f3b1e,#2e1a0f)">📦</div>
+                        <div class="inbox-info">
+                            <div class="inbox-type"><span>📦</span><small>Order</small></div>
+                            <div class="confidence-bar"><div class="confidence-fill" style="width:78%"></div></div>
+                            <div class="inbox-time">Yesterday</div>
+                        </div>
+                    </div>
+                    <div class="inbox-card">
+                        <div class="inbox-img" style="background:linear-gradient(135deg,#1e5f3b,#0f2e1a)">💡</div>
+                        <div class="inbox-info">
+                            <div class="inbox-type"><span>💡</span><small>Inspiration</small></div>
+                            <div class="confidence-bar"><div class="confidence-fill" style="width:65%"></div></div>
+                            <div class="inbox-time">Yesterday</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- LIBRARY -->
+            <div class="screen-content" id="screen-library">
+                <div class="header">
+                    <h1>Library</h1>
+                </div>
+                <div class="folder-list">
+                    <div class="folder-item">
+                        <span class="folder-icon">📄</span>
+                        <div class="folder-info">
+                            <div class="folder-name">Bills</div>
+                            <div class="folder-path">/Finance/Bills</div>
+                        </div>
+                        <span class="folder-count">12</span>
+                    </div>
+                    <div class="folder-item">
+                        <span class="folder-icon">🧾</span>
+                        <div class="folder-info">
+                            <div class="folder-name">Receipts</div>
+                            <div class="folder-path">/Finance/Receipts</div>
+                        </div>
+                        <span class="folder-count">47</span>
+                    </div>
+                    <div class="folder-item">
+                        <span class="folder-icon">🔄</span>
+                        <div class="folder-info">
+                            <div class="folder-name">Subscriptions</div>
+                            <div class="folder-path">/Finance/Subscriptions</div>
+                        </div>
+                        <span class="folder-count">8</span>
+                    </div>
+                    <div class="folder-item">
+                        <span class="folder-icon">🛒</span>
+                        <div class="folder-info">
+                            <div class="folder-name">Orders</div>
+                            <div class="folder-path">/Shopping/Orders</div>
+                        </div>
+                        <span class="folder-count">23</span>
+                    </div>
+                    <div class="folder-item">
+                        <span class="folder-icon">✈️</span>
+                        <div class="folder-info">
+                            <div class="folder-name">Travel</div>
+                            <div class="folder-path">/Tickets/Travel</div>
+                        </div>
+                        <span class="folder-count">5</span>
+                    </div>
+                    <div class="folder-item">
+                        <span class="folder-icon">💡</span>
+                        <div class="folder-info">
+                            <div class="folder-name">Inspiration</div>
+                            <div class="folder-path">/Inspiration</div>
+                        </div>
+                        <span class="folder-count">31</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SPENDING -->
+            <div class="screen-content" id="screen-spending">
+                <div class="header">
+                    <h1>Spending</h1>
+                </div>
+                <div class="summary-row">
+                    <div class="summary-card">
+                        <div class="summary-label">This Week</div>
+                        <div class="summary-amount">฿3,420</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">This Month</div>
+                        <div class="summary-amount">฿12,850</div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">Category Breakdown</div>
+                    <div class="chart-container">
+                        <div class="category-row">
+                            <div class="category-label"><div class="category-dot" style="background:#ef4444"></div><span class="category-name">Food</span></div>
+                            <div class="category-bar-bg"><div class="category-bar" style="width:65%;background:#ef4444"></div></div>
+                            <span class="category-amount">฿4,200</span>
+                        </div>
+                        <div class="category-row">
+                            <div class="category-label"><div class="category-dot" style="background:#f59e0b"></div><span class="category-name">Shopping</span></div>
+                            <div class="category-bar-bg"><div class="category-bar" style="width:45%;background:#f59e0b"></div></div>
+                            <span class="category-amount">฿2,900</span>
+                        </div>
+                        <div class="category-row">
+                            <div class="category-label"><div class="category-dot" style="background:#3b82f6"></div><span class="category-name">Travel</span></div>
+                            <div class="category-bar-bg"><div class="category-bar" style="width:35%;background:#3b82f6"></div></div>
+                            <span class="category-amount">฿2,250</span>
+                        </div>
+                        <div class="category-row">
+                            <div class="category-label"><div class="category-dot" style="background:#8b5cf6"></div><span class="category-name">Subs</span></div>
+                            <div class="category-bar-bg"><div class="category-bar" style="width:25%;background:#8b5cf6"></div></div>
+                            <span class="category-amount">฿1,600</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">30-Day Trend</div>
+                    <div class="trend-chart">
+                        <div class="trend-bar" style="height:30%"></div>
+                        <div class="trend-bar" style="height:45%"></div>
+                        <div class="trend-bar" style="height:25%"></div>
+                        <div class="trend-bar" style="height:60%"></div>
+                        <div class="trend-bar" style="height:40%"></div>
+                        <div class="trend-bar" style="height:35%"></div>
+                        <div class="trend-bar" style="height:80%"></div>
+                        <div class="trend-bar" style="height:55%"></div>
+                        <div class="trend-bar" style="height:45%"></div>
+                        <div class="trend-bar" style="height:70%"></div>
+                        <div class="trend-bar" style="height:50%"></div>
+                        <div class="trend-bar" style="height:65%"></div>
+                        <div class="trend-bar" style="height:40%"></div>
+                        <div class="trend-bar" style="height:55%"></div>
+                        <div class="trend-bar" style="height:75%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SETTINGS -->
+            <div class="screen-content" id="screen-settings">
+                <div class="header">
+                    <h1>Settings</h1>
+                </div>
+                
+                <div class="setting-group">
+                    <div class="section-title">AI Provider</div>
+                    <div class="segments">
+                        <div class="segment">Off</div>
+                        <div class="segment active">OpenAI</div>
+                        <div class="segment">Anthropic</div>
+                    </div>
+                    
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">API Key</div>
+                            <div class="setting-desc">sk-•••••••••••••••</div>
+                        </div>
+                        <span class="badge">Valid</span>
+                    </div>
+                </div>
+                
+                <div class="setting-group">
+                    <div class="section-title">Privacy</div>
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Send images for accuracy</div>
+                            <div class="setting-desc">Disabled: only OCR text sent</div>
+                        </div>
+                        <div class="toggle"></div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Redact account numbers</div>
+                            <div class="setting-desc">Hide sensitive data before AI</div>
+                        </div>
+                        <div class="toggle on"></div>
+                    </div>
+                </div>
+                
+                <div class="setting-group">
+                    <div class="section-title">Google Drive</div>
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="setting-label">Enable Drive backup</div>
+                            <div class="setting-desc">Auto-upload to Drive</div>
+                        </div>
+                        <div class="toggle on"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-bar">
+            <div class="tab-item active" onclick="showScreen('inbox')">
+                <span>📥</span>
+                <small>Inbox</small>
+            </div>
+            <div class="tab-item" onclick="showScreen('library')">
+                <span>📁</span>
+                <small>Library</small>
+            </div>
+            <div class="tab-item" onclick="showScreen('spending')">
+                <span>📊</span>
+                <small>Spending</small>
+            </div>
+            <div class="tab-item" onclick="showScreen('settings')">
+                <span>⚙️</span>
+                <small>Settings</small>
+            </div>
+        </div>
+    </div>
+
+<script>
+function showScreen(name) {
+    document.querySelectorAll('.screen-content').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+    document.getElementById('screen-' + name).classList.add('active');
+    event.currentTarget.classList.add('active');
+}
+
+// Toggle switches
+document.querySelectorAll('.toggle').forEach(t => {
+    t.addEventListener('click', () => t.classList.toggle('on'));
+});
+
+// Segments
+document.querySelectorAll('.segment').forEach(s => {
+    s.addEventListener('click', () => {
+        s.parentElement.querySelectorAll('.segment').forEach(x => x.classList.remove('active'));
+        s.classList.add('active');
+    });
+});
+</script>
+</body>
+</html>
