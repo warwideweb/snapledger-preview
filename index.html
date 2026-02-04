@@ -172,6 +172,9 @@
         .progress-bar{position:fixed;top:0;left:0;right:0;height:3px;background:var(--card2);z-index:2000;display:none}
         .progress-bar.show{display:block}
         .progress-fill{height:100%;background:var(--orange);transition:width 0.3s}
+        .progress-text{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--card);border:1px solid var(--border);padding:20px 32px;border-radius:16px;font-size:15px;font-weight:600;z-index:2001;display:none;text-align:center}
+        .progress-text.show{display:block}
+        .progress-text .pct{font-size:28px;font-weight:700;color:var(--orange);display:block;margin-top:8px}
         #file-input,#import-input{display:none}
         .leaflet-container{background:#1a1a2e!important}
         .custom-marker{background:var(--orange);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
@@ -180,6 +183,7 @@
 <body>
     <div class="app">
         <div class="progress-bar" id="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        <div class="progress-text" id="progress-text">Processing...<span class="pct" id="progress-pct">0%</span></div>
         
         <div class="screen" id="home">
             <div class="header">
@@ -312,12 +316,18 @@
         <div class="export-modal" id="export-modal">
             <div class="export-box">
                 <div class="export-title">Export PDF Report</div>
-                <div class="export-options">
+                <div class="export-options" style="max-height:300px;overflow-y:auto">
                     <div class="export-option selected" data-type="receipt" onclick="toggleExportOption(this)"><div class="export-checkbox"></div><div class="export-option-text">🧾 Receipts</div></div>
                     <div class="export-option selected" data-type="bill" onclick="toggleExportOption(this)"><div class="export-checkbox"></div><div class="export-option-text">📄 Bills</div></div>
                     <div class="export-option" data-type="product" onclick="toggleExportOption(this)"><div class="export-checkbox"></div><div class="export-option-text">🛍️ Wants/Products</div></div>
+                    <div class="export-option" data-type="food" onclick="toggleExportOption(this)"><div class="export-checkbox"></div><div class="export-option-text">🍜 Food</div></div>
+                    <div class="export-option" data-type="cafe" onclick="toggleExportOption(this)"><div class="export-checkbox"></div><div class="export-option-text">☕ Cafes</div></div>
+                    <div class="export-option" data-type="place" onclick="toggleExportOption(this)"><div class="export-checkbox"></div><div class="export-option-text">📍 Places</div></div>
+                    <div class="export-option" data-type="travel" onclick="toggleExportOption(this)"><div class="export-checkbox"></div><div class="export-option-text">✈️ Travel</div></div>
                     <div class="export-option" data-type="transfer" onclick="toggleExportOption(this)"><div class="export-checkbox"></div><div class="export-option-text">💸 Transfers</div></div>
-                    <div class="export-option" data-type="all" onclick="toggleExportOption(this)"><div class="export-checkbox"></div><div class="export-option-text">📱 Everything</div></div>
+                    <div class="export-option" data-type="idea" onclick="toggleExportOption(this)"><div class="export-checkbox"></div><div class="export-option-text">💡 Ideas</div></div>
+                    <div class="export-option" data-type="screenshot" onclick="toggleExportOption(this)"><div class="export-checkbox"></div><div class="export-option-text">📱 Screenshots</div></div>
+                    <div class="export-option" data-type="all" onclick="toggleExportOption(this)" style="border-color:var(--orange)"><div class="export-checkbox"></div><div class="export-option-text">🔥 Everything</div></div>
                 </div>
                 <div class="edit-actions"><button class="edit-btn cancel" onclick="closeExportModal()">Cancel</button><button class="edit-btn save" onclick="generatePDF()">Generate PDF</button></div>
             </div>
@@ -391,9 +401,18 @@ async function processImage(dataUrl){
 function showProgress(current,total){
     const bar=document.getElementById('progress-bar');
     const fill=document.getElementById('progress-fill');
-    if(current>=total){bar.classList.remove('show');return;}
+    const text=document.getElementById('progress-text');
+    const pct=document.getElementById('progress-pct');
+    if(current>=total){
+        bar.classList.remove('show');
+        text.classList.remove('show');
+        return;
+    }
+    const percent=Math.round((current/total)*100);
     bar.classList.add('show');
-    fill.style.width=((current/total)*100)+'%';
+    text.classList.add('show');
+    fill.style.width=percent+'%';
+    pct.textContent=percent+'%';
 }
 
 function pickFiles(){document.getElementById('file-input').click();}
@@ -405,8 +424,13 @@ function setPeriod(p,el){currentPeriod=p;document.querySelectorAll('.period-tab'
 
 function initMap(){
     if(map)return;
-    map=L.map('map',{zoomControl:false}).setView([13.7563,100.5018],4);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'©OpenStreetMap'}).addTo(map);
+    map=L.map('map',{zoomControl:false}).setView([13.7563,100.5018],11);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+        attribution:'©OpenStreetMap',
+        maxZoom:18,
+        errorTileUrl:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='
+    }).addTo(map);
+    setTimeout(()=>map.invalidateSize(),200);
     renderMapPins();
 }
 
@@ -475,9 +499,8 @@ function toggleExportOption(el){if(el.dataset.type==='all'){document.querySelect
 function generatePDF(){
     const selectedTypes=Array.from(document.querySelectorAll('.export-option.selected')).map(o=>o.dataset.type);
     const includeAll=selectedTypes.includes('all');
-    let filtered=items.filter(i=>i.amountConverted);
-    if(!includeAll)filtered=filtered.filter(i=>selectedTypes.includes(i.typeId));
-    const total=filtered.reduce((s,i)=>s+i.amountConverted,0);
+    let filtered=includeAll?[...items]:items.filter(i=>selectedTypes.includes(i.typeId));
+    const total=filtered.filter(i=>i.amountConverted).reduce((s,i)=>s+i.amountConverted,0);
     
     let html=`<!DOCTYPE html><html><head><title>Stashd Report</title><style>
         body{font-family:Arial,sans-serif;padding:40px;max-width:800px;margin:0 auto}
