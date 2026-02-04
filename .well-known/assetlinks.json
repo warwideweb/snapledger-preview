@@ -3,6 +3,6 @@
   "target": {
     "namespace": "android_app",
     "package_name": "io.github.warwideweb.twa",
-    "sha256_cert_fingerprints": ["D6:6E:AC:BC:24:CB:13:6C:EF:71:4A:E9:52:42:6D:AD:1F:74:8E:31:3D:4C:00:E9:39:61:35:98:28:5B:F7:07"]
+    "sha256_cert_fingerprints": ["B6:5D:F0:AA:BE:E7:CE:45:DE:FF:C4:5E:FD:92:7A:CB:96:8C:22:2B:E8:13:B3:1B:5E:31:F7:6A:98:11:00:52"]
   }
 }]
