@@ -311,6 +311,7 @@
             <div class="settings-group">
                 <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--red)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div><div class="settings-label">Export PDF Report</div><div class="settings-desc">Choose what to include</div></div></div><span class="settings-value" onclick="openExportModal()">Export →</span></div>
                 <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--blue)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg></div><div><div class="settings-label">Full Backup</div></div></div><span class="settings-value" onclick="exportFull()">Export →</span></div>
+                <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:#4285f4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div><div><div class="settings-label">Backup to Google Drive</div><div class="settings-desc">Save backup file to Drive</div></div></div><span class="settings-value" onclick="backupToDrive()">Backup →</span></div>
                 <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg></div><div><div class="settings-label">Import Backup</div></div></div><span class="settings-value" onclick="importBackup()">Import →</span></div>
             </div>
             <div class="section-header"><span class="section-title">Data</span></div>
@@ -736,6 +737,35 @@ function generatePDF(){
 }
 
 function exportFull(){const data=JSON.stringify({version:'3.3',exported:new Date().toISOString(),settings,items});const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));a.download=`stashd-${new Date().toISOString().split('T')[0]}.json`;a.click();toast('Backup saved');}
+
+async function backupToDrive(){
+    const data=JSON.stringify({version:'3.3',exported:new Date().toISOString(),settings,items},null,2);
+    const filename=`stashd-backup-${new Date().toISOString().split('T')[0]}.json`;
+    const file=new File([data],filename,{type:'application/json'});
+    
+    // Try Web Share API first (works on mobile)
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+        try{
+            await navigator.share({files:[file],title:'STASH\'D Backup',text:'My STASH\'D backup'});
+            toast('Shared! Save to Drive');
+            return;
+        }catch(e){if(e.name!=='AbortError')console.log('Share failed',e);}
+    }
+    
+    // Fallback: download and show instructions
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));
+    a.download=filename;
+    a.click();
+    
+    // Open Google Drive after short delay
+    setTimeout(()=>{
+        if(confirm('File downloaded! Open Google Drive to upload it?')){
+            window.open('https://drive.google.com/drive/my-drive','_blank');
+        }
+    },500);
+    toast('Backup downloaded');
+}
 function importBackup(){document.getElementById('import-input').click();}
 document.getElementById('import-input').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{const data=JSON.parse(await file.text());if(data.items){if(confirm(`Import ${data.items.length} items?`)){items=[...data.items,...items];saveItems();render();toast(`Imported ${data.items.length}`);}}}catch(err){toast('Invalid file');}e.target.value='';});
 function clearData(){if(confirm('Delete all?')){items=[];saveItems();render();toast('Cleared');}}
