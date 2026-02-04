@@ -4,239 +4,183 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#000">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    <meta name="description" content="Your smart screenshot stash - organize bills, places, wants, and ideas">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
     <title>Stashd</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        :root {
-            --bg: #000;
-            --card: #0a0a0a;
-            --card2: #141414;
-            --border: #1c1c1c;
-            --text: #fff;
-            --text2: #666;
-            --text3: #444;
-            --green: #22c55e;
-            --red: #ef4444;
-            --blue: #3b82f6;
-            --orange: #f97316;
-            --purple: #a855f7;
-            --pink: #ec4899;
-            --yellow: #eab308;
-            --cyan: #06b6d4;
-        }
-        
-        html, body {
-            height: 100%;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            overflow: hidden;
-            font-size: 15px;
-            line-height: 1.5;
-        }
-        
-        .app {
-            height: 100%;
-            max-width: 430px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-        
-        .screen { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 90px; }
-        .screen.hidden { display: none; }
-        
-        .header { padding: 24px 20px 16px; padding-top: max(24px, calc(env(safe-area-inset-top) + 12px)); }
-        .header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-        .header-title { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
-        .header-sub { font-size: 14px; color: var(--text2); }
-        .header-btn {
-            background: #fff; color: #000; border: none; padding: 12px 20px;
-            border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer;
-            display: flex; align-items: center; gap: 8px;
-        }
-        .header-btn:active { transform: scale(0.96); }
-        .header-btn svg { width: 18px; height: 18px; }
-        
-        .big-stat { text-align: center; padding: 20px; }
-        .big-stat-label { font-size: 13px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-        .big-stat-value { font-size: 48px; font-weight: 700; letter-spacing: -2px; }
-        .big-stat-sub { font-size: 14px; color: var(--text2); margin-top: 4px; }
-        
-        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 0 16px 20px; }
-        .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 10px; text-align: center; cursor: pointer; }
-        .stat-card:active { background: var(--card2); }
-        .stat-icon { font-size: 20px; margin-bottom: 6px; }
-        .stat-num { font-size: 18px; font-weight: 700; }
-        .stat-label { font-size: 10px; color: var(--text2); text-transform: uppercase; margin-top: 2px; }
-        
-        /* Analytics Section */
-        .analytics { background: var(--card); border: 1px solid var(--border); border-radius: 16px; margin: 0 16px 20px; overflow: hidden; }
-        .analytics-header { padding: 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); cursor: pointer; }
-        .analytics-title { font-size: 15px; font-weight: 600; }
-        .analytics-toggle { color: var(--text2); font-size: 13px; display: flex; align-items: center; gap: 6px; }
-        .analytics-toggle svg { width: 16px; height: 16px; transition: transform 0.2s; }
-        .analytics.expanded .analytics-toggle svg { transform: rotate(180deg); }
-        .analytics-body { display: none; }
-        .analytics.expanded .analytics-body { display: block; }
-        
-        .period-tabs { display: flex; padding: 12px 16px; gap: 8px; border-bottom: 1px solid var(--border); }
-        .period-tab { flex: 1; padding: 10px; border-radius: 10px; text-align: center; font-size: 13px; font-weight: 500; color: var(--text2); cursor: pointer; background: var(--card2); }
-        .period-tab.active { background: #fff; color: #000; }
-        
-        .analytics-total { padding: 20px 16px; text-align: center; border-bottom: 1px solid var(--border); }
-        .analytics-total-label { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
-        .analytics-total-value { font-size: 32px; font-weight: 700; }
-        
-        .category-list { padding: 8px 0; }
-        .category-item { display: flex; align-items: center; padding: 12px 16px; gap: 12px; }
-        .category-icon { font-size: 20px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: var(--card2); border-radius: 10px; }
-        .category-info { flex: 1; }
-        .category-name { font-size: 14px; font-weight: 500; }
-        .category-bar { height: 4px; background: var(--card2); border-radius: 2px; margin-top: 6px; overflow: hidden; }
-        .category-fill { height: 100%; border-radius: 2px; background: var(--green); }
-        .category-value { font-size: 14px; font-weight: 600; }
-        .category-count { font-size: 11px; color: var(--text2); }
-        
-        .section-header { display: flex; align-items: center; justify-content: space-between; padding: 0 20px 12px; }
-        .section-title { font-size: 13px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
-        .section-action { font-size: 13px; color: var(--blue); cursor: pointer; }
-        
-        .item-list { padding: 0 16px; }
-        .list-item { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 14px; cursor: pointer; }
-        .list-item:active { transform: scale(0.98); background: var(--card2); }
-        .list-thumb { width: 52px; height: 52px; border-radius: 10px; object-fit: cover; background: var(--card2); }
-        .list-content { flex: 1; min-width: 0; }
-        .list-title { font-weight: 600; font-size: 15px; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .list-sub { font-size: 13px; color: var(--text2); display: flex; align-items: center; gap: 8px; }
-        .list-tag { display: inline-flex; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 500; }
-        .list-amount { font-weight: 600; font-size: 15px; color: var(--green); }
-        
-        .search-box { background: var(--card2); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; margin: 0 16px 16px; display: flex; align-items: center; gap: 12px; }
-        .search-box svg { width: 18px; height: 18px; color: var(--text3); }
-        .search-box input { flex: 1; background: none; border: none; color: var(--text); font-size: 15px; outline: none; }
-        .search-box input::placeholder { color: var(--text3); }
-        
-        .filters { display: flex; gap: 8px; padding: 0 16px 16px; overflow-x: auto; }
-        .filters::-webkit-scrollbar { display: none; }
-        .filter { background: var(--card2); border: 1px solid var(--border); border-radius: 100px; padding: 10px 16px; font-size: 13px; font-weight: 500; color: var(--text2); white-space: nowrap; cursor: pointer; }
-        .filter:active { transform: scale(0.95); }
-        .filter.active { background: #fff; color: #000; border-color: #fff; }
-        
-        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px; padding: 0 3px; }
-        .grid-item { position: relative; aspect-ratio: 1; overflow: hidden; background: var(--card); cursor: pointer; }
-        .grid-item img { width: 100%; height: 100%; object-fit: cover; }
-        .grid-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 60%); padding: 12px; display: flex; flex-direction: column; justify-content: flex-end; }
-        .grid-type { display: inline-flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); padding: 5px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; width: fit-content; margin-bottom: 6px; }
-        .grid-title { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .grid-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 2px; }
-        .grid-amount { font-size: 12px; font-weight: 600; color: var(--green); }
-        .grid-time { font-size: 10px; color: rgba(255,255,255,0.5); }
-        
-        .map-container { height: 250px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; margin: 0 16px 16px; overflow: hidden; position: relative; }
-        .map-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
-        .map-placeholder svg { width: 40px; height: 40px; color: var(--text3); margin-bottom: 10px; }
-        .map-placeholder-text { color: var(--text2); font-size: 14px; }
-        .map-count { background: var(--card2); padding: 8px 16px; border-radius: 100px; margin-top: 10px; font-size: 13px; }
-        
-        .place-list { padding: 0 16px; }
-        .place-item { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 14px; cursor: pointer; }
-        .place-item:active { transform: scale(0.98); }
-        .place-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
-        .place-content { flex: 1; }
-        .place-name { font-weight: 600; font-size: 15px; }
-        .place-address { font-size: 13px; color: var(--text2); margin-top: 2px; }
-        
-        .folder { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin: 0 16px 10px; display: flex; align-items: center; gap: 14px; cursor: pointer; }
-        .folder:active { transform: scale(0.98); }
-        .folder-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
-        .folder-icon svg { width: 22px; height: 22px; }
-        .folder-content { flex: 1; }
-        .folder-name { font-weight: 600; }
-        .folder-sub { font-size: 13px; color: var(--text2); margin-top: 2px; }
-        .folder-badge { background: var(--card2); padding: 6px 14px; border-radius: 100px; font-size: 14px; font-weight: 600; }
-        
-        .settings-group { background: var(--card); border: 1px solid var(--border); border-radius: 16px; margin: 0 16px 16px; overflow: hidden; }
-        .settings-item { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; }
-        .settings-item:not(:last-child) { border-bottom: 1px solid var(--border); }
-        .settings-left { display: flex; align-items: center; gap: 14px; }
-        .settings-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .settings-icon svg { width: 18px; height: 18px; }
-        .settings-label { font-size: 15px; }
-        .settings-desc { font-size: 12px; color: var(--text2); margin-top: 2px; }
-        .settings-value { font-size: 15px; color: var(--text2); cursor: pointer; }
-        .settings-input { background: var(--card2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; color: var(--text); font-size: 14px; width: 120px; text-align: right; }
-        .settings-input:focus { outline: none; border-color: var(--blue); }
-        
-        .toggle { width: 52px; height: 32px; background: var(--card2); border: 1px solid var(--border); border-radius: 16px; position: relative; cursor: pointer; flex-shrink: 0; }
-        .toggle.on { background: var(--green); border-color: var(--green); }
-        .toggle::after { content: ''; position: absolute; width: 26px; height: 26px; background: #fff; border-radius: 50%; top: 2px; left: 2px; transition: transform 0.2s; }
-        .toggle.on::after { transform: translateX(20px); }
-        
-        .tabs { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(30px); border-top: 1px solid var(--border); padding: 8px 20px; padding-bottom: max(8px, env(safe-area-inset-bottom)); display: flex; justify-content: center; }
-        .tabs-inner { display: flex; max-width: 430px; width: 100%; justify-content: space-around; }
-        .tab { display: flex; flex-direction: column; align-items: center; padding: 8px 12px; cursor: pointer; border-radius: 12px; }
-        .tab:active { background: rgba(255,255,255,0.05); }
-        .tab svg { width: 24px; height: 24px; color: var(--text3); stroke-width: 1.8; margin-bottom: 4px; }
-        .tab span { font-size: 10px; font-weight: 500; color: var(--text3); }
-        .tab.active svg { color: var(--text); }
-        .tab.active span { color: var(--text); }
-        
-        .toast { position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--card); border: 1px solid var(--border); padding: 14px 24px; border-radius: 14px; font-size: 14px; font-weight: 500; opacity: 0; transition: all 0.3s; z-index: 999; display: flex; align-items: center; gap: 10px; }
-        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-        
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; display: none; flex-direction: column; }
-        .modal.show { display: flex; }
-        .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; padding-top: max(16px, env(safe-area-inset-top)); }
-        .modal-close { width: 36px; height: 36px; background: rgba(255,255,255,0.1); border: none; border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .modal-close svg { width: 20px; height: 20px; }
-        .modal-delete { width: 36px; height: 36px; background: rgba(239,68,68,0.2); border: none; border-radius: 50%; color: var(--red); display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .modal-delete svg { width: 18px; height: 18px; }
-        .modal-img { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; min-height: 0; }
-        .modal-img img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 12px; }
-        .modal-info { background: var(--card); border-top: 1px solid var(--border); padding: 20px; padding-bottom: max(20px, env(safe-area-inset-bottom)); }
-        .modal-type { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-bottom: 12px; }
-        .modal-title-row { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
-        .modal-title { font-size: 20px; font-weight: 700; flex: 1; }
-        .modal-edit { width: 32px; height: 32px; background: var(--card2); border: none; border-radius: 8px; color: var(--text2); cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .modal-edit svg { width: 16px; height: 16px; }
-        .modal-subtitle { color: var(--text2); margin-bottom: 16px; }
-        .modal-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-        .modal-btn { flex: 1; min-width: calc(50% - 5px); background: var(--card2); border: 1px solid var(--border); border-radius: 12px; padding: 14px; color: var(--text); font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .modal-btn svg { width: 18px; height: 18px; }
-        .modal-btn.primary { background: #fff; color: #000; border-color: #fff; }
-        .modal-btn.blue { background: var(--blue); border-color: var(--blue); }
-        .modal-btn.orange { background: var(--orange); border-color: var(--orange); }
-        
-        /* Edit Modal */
-        .edit-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1001; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .edit-modal.show { display: flex; }
-        .edit-box { background: var(--card); border: 1px solid var(--border); border-radius: 20px; width: 100%; max-width: 360px; padding: 24px; }
-        .edit-title { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
-        .edit-field { margin-bottom: 16px; }
-        .edit-label { font-size: 13px; color: var(--text2); margin-bottom: 8px; }
-        .edit-input { width: 100%; background: var(--card2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; color: var(--text); font-size: 16px; }
-        .edit-input:focus { outline: none; border-color: var(--blue); }
-        .edit-actions { display: flex; gap: 10px; margin-top: 20px; }
-        .edit-btn { flex: 1; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; border: none; }
-        .edit-btn.cancel { background: var(--card2); color: var(--text); }
-        .edit-btn.save { background: #fff; color: #000; }
-        
-        .empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 40px; text-align: center; }
-        .empty-title { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
-        .empty-text { color: var(--text2); font-size: 15px; margin-bottom: 24px; max-width: 260px; }
-        
-        #file-input, #import-input { display: none; }
+        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+        :root{--bg:#000;--card:#0a0a0a;--card2:#141414;--border:#1c1c1c;--text:#fff;--text2:#666;--text3:#444;--green:#22c55e;--red:#ef4444;--blue:#3b82f6;--orange:#f97316;--purple:#a855f7;--pink:#ec4899;--yellow:#eab308;--cyan:#06b6d4}
+        html,body{height:100%;font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);overflow:hidden;font-size:15px}
+        .app{height:100%;max-width:430px;margin:0 auto;display:flex;flex-direction:column}
+        .screen{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:90px}.screen.hidden{display:none}
+        .header{padding:24px 20px 16px;padding-top:max(24px,calc(env(safe-area-inset-top) + 12px))}
+        .header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+        .header-title{font-size:28px;font-weight:700;letter-spacing:-0.5px}
+        .header-sub{font-size:14px;color:var(--text2)}
+        .header-btn{background:#fff;color:#000;border:none;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px}
+        .header-btn:active{transform:scale(0.96)}
+        .header-btn svg{width:18px;height:18px}
+        .big-stat{text-align:center;padding:20px}
+        .big-stat-label{font-size:13px;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+        .big-stat-value{font-size:48px;font-weight:700;letter-spacing:-2px}
+        .big-stat-sub{font-size:14px;color:var(--text2);margin-top:4px}
+        .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 16px 20px}
+        .stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 10px;text-align:center;cursor:pointer}
+        .stat-card:active{background:var(--card2)}
+        .stat-icon{font-size:20px;margin-bottom:6px}
+        .stat-num{font-size:18px;font-weight:700}
+        .stat-label{font-size:10px;color:var(--text2);text-transform:uppercase;margin-top:2px}
+        .analytics{background:var(--card);border:1px solid var(--border);border-radius:16px;margin:0 16px 20px;overflow:hidden}
+        .analytics-header{padding:16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);cursor:pointer}
+        .analytics-title{font-size:15px;font-weight:600}
+        .analytics-toggle{color:var(--text2);font-size:13px;display:flex;align-items:center;gap:6px}
+        .analytics-toggle svg{width:16px;height:16px;transition:transform 0.2s}
+        .analytics.expanded .analytics-toggle svg{transform:rotate(180deg)}
+        .analytics-body{display:none}.analytics.expanded .analytics-body{display:block}
+        .period-tabs{display:flex;padding:12px 16px;gap:8px;border-bottom:1px solid var(--border)}
+        .period-tab{flex:1;padding:10px;border-radius:10px;text-align:center;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;background:var(--card2)}
+        .period-tab.active{background:#fff;color:#000}
+        .analytics-total{padding:20px 16px;text-align:center;border-bottom:1px solid var(--border)}
+        .analytics-total-label{font-size:12px;color:var(--text2);margin-bottom:4px}
+        .analytics-total-value{font-size:32px;font-weight:700}
+        .category-list{padding:8px 0}
+        .category-item{display:flex;align-items:center;padding:12px 16px;gap:12px}
+        .category-icon{font-size:20px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:var(--card2);border-radius:10px}
+        .category-info{flex:1}
+        .category-name{font-size:14px;font-weight:500}
+        .category-bar{height:4px;background:var(--card2);border-radius:2px;margin-top:6px;overflow:hidden}
+        .category-fill{height:100%;border-radius:2px}
+        .category-value{font-size:14px;font-weight:600}
+        .category-count{font-size:11px;color:var(--text2)}
+        .section-header{display:flex;align-items:center;justify-content:space-between;padding:0 20px 12px}
+        .section-title{font-size:13px;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px}
+        .section-action{font-size:13px;color:var(--blue);cursor:pointer}
+        .item-list{padding:0 16px}
+        .list-item{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:14px;cursor:pointer}
+        .list-item:active{transform:scale(0.98);background:var(--card2)}
+        .list-thumb{width:52px;height:52px;border-radius:10px;object-fit:cover;background:var(--card2)}
+        .list-content{flex:1;min-width:0}
+        .list-title{font-weight:600;font-size:15px;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .list-sub{font-size:13px;color:var(--text2);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+        .list-tag{display:inline-flex;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:500}
+        .list-amount{font-weight:600;font-size:15px;color:var(--green)}
+        .list-dupe{background:var(--orange);color:#fff;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600}
+        .search-box{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:0 16px 16px;display:flex;align-items:center;gap:12px}
+        .search-box svg{width:18px;height:18px;color:var(--text3)}
+        .search-box input{flex:1;background:none;border:none;color:var(--text);font-size:15px;outline:none}
+        .search-box input::placeholder{color:var(--text3)}
+        .filters{display:flex;gap:8px;padding:0 16px 16px;overflow-x:auto}.filters::-webkit-scrollbar{display:none}
+        .filter{background:var(--card2);border:1px solid var(--border);border-radius:100px;padding:10px 16px;font-size:13px;font-weight:500;color:var(--text2);white-space:nowrap;cursor:pointer}
+        .filter:active{transform:scale(0.95)}
+        .filter.active{background:#fff;color:#000;border-color:#fff}
+        .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:3px;padding:0 3px}
+        .grid-item{position:relative;aspect-ratio:1;overflow:hidden;background:var(--card);cursor:pointer}
+        .grid-item img{width:100%;height:100%;object-fit:cover}
+        .grid-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.85) 0%,transparent 60%);padding:12px;display:flex;flex-direction:column;justify-content:flex-end}
+        .grid-type{display:inline-flex;align-items:center;gap:5px;background:rgba(0,0,0,0.6);backdrop-filter:blur(10px);padding:5px 8px;border-radius:6px;font-size:10px;font-weight:600;width:fit-content;margin-bottom:6px}
+        .grid-title{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .grid-meta{display:flex;justify-content:space-between;align-items:center;margin-top:2px}
+        .grid-amount{font-size:12px;font-weight:600;color:var(--green)}
+        .grid-time{font-size:10px;color:rgba(255,255,255,0.5)}
+        .grid-dupe{position:absolute;top:8px;left:8px;background:var(--orange);padding:4px 8px;border-radius:6px;font-size:10px;font-weight:600}
+        .tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+        .auto-tag{background:var(--card2);padding:2px 6px;border-radius:4px;font-size:10px;color:var(--text2)}
+        .map-container{height:200px;background:var(--card);border:1px solid var(--border);border-radius:16px;margin:0 16px 16px;overflow:hidden;position:relative}
+        .map-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%)}
+        .map-placeholder svg{width:36px;height:36px;color:var(--text3);margin-bottom:8px}
+        .map-placeholder-text{color:var(--text2);font-size:14px}
+        .map-count{background:var(--card2);padding:6px 14px;border-radius:100px;margin-top:8px;font-size:13px}
+        .place-list{padding:0 16px}
+        .place-item{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:14px;cursor:pointer}
+        .place-item:active{transform:scale(0.98)}
+        .place-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px}
+        .place-content{flex:1}
+        .place-name{font-weight:600;font-size:15px}
+        .place-address{font-size:13px;color:var(--text2);margin-top:2px}
+        .settings-group{background:var(--card);border:1px solid var(--border);border-radius:16px;margin:0 16px 16px;overflow:hidden}
+        .settings-item{display:flex;align-items:center;justify-content:space-between;padding:16px 18px}
+        .settings-item:not(:last-child){border-bottom:1px solid var(--border)}
+        .settings-left{display:flex;align-items:center;gap:14px}
+        .settings-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+        .settings-icon svg{width:18px;height:18px}
+        .settings-label{font-size:15px}
+        .settings-desc{font-size:12px;color:var(--text2);margin-top:2px}
+        .settings-value{font-size:15px;color:var(--text2);cursor:pointer}
+        .settings-input{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;width:100px;text-align:right}
+        .settings-input:focus{outline:none;border-color:var(--blue)}
+        .toggle{width:52px;height:32px;background:var(--card2);border:1px solid var(--border);border-radius:16px;position:relative;cursor:pointer;flex-shrink:0}
+        .toggle.on{background:var(--green);border-color:var(--green)}
+        .toggle::after{content:'';position:absolute;width:26px;height:26px;background:#fff;border-radius:50%;top:2px;left:2px;transition:transform 0.2s}
+        .toggle.on::after{transform:translateX(20px)}
+        .tabs{position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(30px);border-top:1px solid var(--border);padding:8px 20px;padding-bottom:max(8px,env(safe-area-inset-bottom));display:flex;justify-content:center}
+        .tabs-inner{display:flex;max-width:430px;width:100%;justify-content:space-around}
+        .tab{display:flex;flex-direction:column;align-items:center;padding:8px 12px;cursor:pointer;border-radius:12px}
+        .tab:active{background:rgba(255,255,255,0.05)}
+        .tab svg{width:24px;height:24px;color:var(--text3);stroke-width:1.8;margin-bottom:4px}
+        .tab span{font-size:10px;font-weight:500;color:var(--text3)}
+        .tab.active svg{color:var(--text)}.tab.active span{color:var(--text)}
+        .toast{position:fixed;bottom:110px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card);border:1px solid var(--border);padding:14px 24px;border-radius:14px;font-size:14px;font-weight:500;opacity:0;transition:all 0.3s;z-index:999;display:flex;align-items:center;gap:10px}
+        .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+        .modal{position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:1000;display:none;flex-direction:column}
+        .modal.show{display:flex}
+        .modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;padding-top:max(16px,env(safe-area-inset-top))}
+        .modal-close,.modal-delete{width:36px;height:36px;border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer}
+        .modal-close{background:rgba(255,255,255,0.1);color:#fff}
+        .modal-close svg,.modal-delete svg{width:18px;height:18px}
+        .modal-delete{background:rgba(239,68,68,0.2);color:var(--red)}
+        .modal-img{flex:1;display:flex;align-items:center;justify-content:center;padding:20px;min-height:0}
+        .modal-img img{max-width:100%;max-height:100%;object-fit:contain;border-radius:12px}
+        .modal-info{background:var(--card);border-top:1px solid var(--border);padding:20px;padding-bottom:max(20px,env(safe-area-inset-bottom))}
+        .modal-type{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:12px}
+        .modal-title-row{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+        .modal-title{font-size:20px;font-weight:700;flex:1}
+        .modal-edit{width:32px;height:32px;background:var(--card2);border:none;border-radius:8px;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center}
+        .modal-edit svg{width:16px;height:16px}
+        .modal-subtitle{color:var(--text2);margin-bottom:8px}
+        .modal-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+        .modal-tag{background:var(--card2);padding:6px 12px;border-radius:8px;font-size:12px;color:var(--text2)}
+        .modal-actions{display:flex;gap:10px;flex-wrap:wrap}
+        .modal-btn{flex:1;min-width:calc(50% - 5px);background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px;color:var(--text);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+        .modal-btn svg{width:18px;height:18px}
+        .modal-btn.primary{background:#fff;color:#000;border-color:#fff}
+        .modal-btn.blue{background:var(--blue);border-color:var(--blue)}
+        .modal-btn.orange{background:var(--orange);border-color:var(--orange)}
+        .edit-modal{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:1001;display:none;align-items:center;justify-content:center;padding:20px}
+        .edit-modal.show{display:flex}
+        .edit-box{background:var(--card);border:1px solid var(--border);border-radius:20px;width:100%;max-width:360px;padding:24px}
+        .edit-title{font-size:18px;font-weight:600;margin-bottom:20px}
+        .edit-field{margin-bottom:16px}
+        .edit-label{font-size:13px;color:var(--text2);margin-bottom:8px}
+        .edit-input{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;color:var(--text);font-size:16px}
+        .edit-input:focus{outline:none;border-color:var(--blue)}
+        .edit-actions{display:flex;gap:10px;margin-top:20px}
+        .edit-btn{flex:1;padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none}
+        .edit-btn.cancel{background:var(--card2);color:var(--text)}
+        .edit-btn.save{background:#fff;color:#000}
+        .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 40px;text-align:center}
+        .empty-title{font-size:20px;font-weight:600;margin-bottom:8px}
+        .empty-text{color:var(--text2);font-size:15px;margin-bottom:24px;max-width:260px}
+        .install-banner{background:linear-gradient(135deg,var(--orange),var(--pink));padding:16px 20px;margin:0 16px 16px;border-radius:14px;display:flex;align-items:center;gap:14px;cursor:pointer}
+        .install-banner.hidden{display:none}
+        .install-icon{font-size:28px}
+        .install-text{flex:1}
+        .install-title{font-weight:600;margin-bottom:2px}
+        .install-sub{font-size:13px;opacity:0.9}
+        .install-close{background:rgba(0,0,0,0.2);border:none;border-radius:50%;width:28px;height:28px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
+        #file-input,#import-input{display:none}
+        .processing{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:2000;display:none;align-items:center;justify-content:center;flex-direction:column}
+        .processing.show{display:flex}
+        .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin 0.8s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .processing-text{margin-top:16px;color:var(--text2)}
     </style>
 </head>
 <body>
     <div class="app">
-        <!-- HOME -->
         <div class="screen" id="home">
             <div class="header">
                 <div class="header-row">
@@ -249,6 +193,15 @@
                 <p class="header-sub">Your screenshot stash</p>
             </div>
             
+            <div class="install-banner" id="install-banner" onclick="installApp()">
+                <span class="install-icon">📱</span>
+                <div class="install-text">
+                    <div class="install-title">Install Stashd</div>
+                    <div class="install-sub">Add to home screen for the best experience</div>
+                </div>
+                <button class="install-close" onclick="event.stopPropagation();hideInstall()">✕</button>
+            </div>
+            
             <div class="big-stat">
                 <div class="big-stat-label">Total Tracked</div>
                 <div class="big-stat-value" id="home-total">$0.00</div>
@@ -256,29 +209,12 @@
             </div>
             
             <div class="stats-row">
-                <div class="stat-card" onclick="activeFilter='product';switchTab('browse');render()">
-                    <div class="stat-icon">🛍️</div>
-                    <div class="stat-num" id="stat-wants">0</div>
-                    <div class="stat-label">Wants</div>
-                </div>
-                <div class="stat-card" onclick="switchTab('places')">
-                    <div class="stat-icon">📍</div>
-                    <div class="stat-num" id="stat-places">0</div>
-                    <div class="stat-label">Places</div>
-                </div>
-                <div class="stat-card" onclick="activeFilter='receipt';switchTab('browse');render()">
-                    <div class="stat-icon">🧾</div>
-                    <div class="stat-num" id="stat-receipts">0</div>
-                    <div class="stat-label">Bills</div>
-                </div>
-                <div class="stat-card" onclick="activeFilter='idea';switchTab('browse');render()">
-                    <div class="stat-icon">💡</div>
-                    <div class="stat-num" id="stat-ideas">0</div>
-                    <div class="stat-label">Ideas</div>
-                </div>
+                <div class="stat-card" onclick="activeFilter='product';switchTab('browse');render()"><div class="stat-icon">🛍️</div><div class="stat-num" id="stat-wants">0</div><div class="stat-label">Wants</div></div>
+                <div class="stat-card" onclick="switchTab('places')"><div class="stat-icon">📍</div><div class="stat-num" id="stat-places">0</div><div class="stat-label">Places</div></div>
+                <div class="stat-card" onclick="activeFilter='receipt';switchTab('browse');render()"><div class="stat-icon">🧾</div><div class="stat-num" id="stat-receipts">0</div><div class="stat-label">Bills</div></div>
+                <div class="stat-card" onclick="activeFilter='idea';switchTab('browse');render()"><div class="stat-icon">💡</div><div class="stat-num" id="stat-ideas">0</div><div class="stat-label">Ideas</div></div>
             </div>
             
-            <!-- Expandable Analytics -->
             <div class="analytics" id="analytics">
                 <div class="analytics-header" onclick="toggleAnalytics()">
                     <span class="analytics-title">📊 Spending Analytics</span>
@@ -286,9 +222,9 @@
                 </div>
                 <div class="analytics-body">
                     <div class="period-tabs">
-                        <div class="period-tab active" onclick="setPeriod('week')">Week</div>
-                        <div class="period-tab" onclick="setPeriod('month')">Month</div>
-                        <div class="period-tab" onclick="setPeriod('all')">All Time</div>
+                        <div class="period-tab active" onclick="setPeriod('week',this)">Week</div>
+                        <div class="period-tab" onclick="setPeriod('month',this)">Month</div>
+                        <div class="period-tab" onclick="setPeriod('all',this)">All Time</div>
                     </div>
                     <div class="analytics-total">
                         <div class="analytics-total-label" id="period-label">This Week</div>
@@ -298,150 +234,63 @@
                 </div>
             </div>
             
-            <div class="section-header">
-                <span class="section-title">Recent</span>
-                <span class="section-action" onclick="switchTab('browse')">See All</span>
-            </div>
+            <div class="section-header"><span class="section-title">Recent</span><span class="section-action" onclick="switchTab('browse')">See All</span></div>
             <div class="item-list" id="home-recent"></div>
         </div>
         
-        <!-- BROWSE -->
         <div class="screen hidden" id="browse">
             <div class="header"><h1 class="header-title">Browse</h1></div>
             <div class="search-box">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-                <input type="text" placeholder="Search..." id="search" oninput="render()">
+                <input type="text" placeholder="Search by title or tag..." id="search" oninput="render()">
             </div>
             <div class="filters" id="filters"></div>
             <div id="browse-content"></div>
         </div>
         
-        <!-- PLACES -->
         <div class="screen hidden" id="places">
-            <div class="header">
-                <h1 class="header-title">Places</h1>
-                <p class="header-sub">Saved locations</p>
-            </div>
-            <div class="map-container">
-                <div class="map-placeholder">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                    <span class="map-placeholder-text">Your saved places</span>
-                    <div class="map-count" id="places-count">0 locations</div>
-                </div>
-            </div>
-            <div class="filters" style="padding-top:0">
-                <div class="filter active" data-filter="all">All</div>
-                <div class="filter" data-filter="food">🍜 Food</div>
-                <div class="filter" data-filter="cafe">☕ Cafes</div>
-                <div class="filter" data-filter="travel">✈️ Travel</div>
-            </div>
+            <div class="header"><h1 class="header-title">Places</h1><p class="header-sub">Saved locations</p></div>
+            <div class="map-container"><div class="map-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span class="map-placeholder-text">Your saved places</span><div class="map-count" id="places-count">0 locations</div></div></div>
+            <div class="filters" style="padding-top:0"><div class="filter active" data-filter="all">All</div><div class="filter" data-filter="food">🍜 Food</div><div class="filter" data-filter="cafe">☕ Cafes</div><div class="filter" data-filter="travel">✈️ Travel</div></div>
             <div class="place-list" id="places-list"></div>
         </div>
         
-        <!-- SETTINGS -->
         <div class="screen hidden" id="settings">
             <div class="header"><h1 class="header-title">Settings</h1></div>
-            
             <div class="section-header"><span class="section-title">AI</span></div>
             <div class="settings-group">
-                <div class="settings-item">
-                    <div class="settings-left">
-                        <div class="settings-icon" style="background: var(--purple);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg></div>
-                        <div><div class="settings-label">OpenAI API Key</div><div class="settings-desc">Only used when adding</div></div>
-                    </div>
-                    <input type="password" class="settings-input" id="api-key" placeholder="sk-..." oninput="saveApiKey()" style="width:100px">
-                </div>
-                <div class="settings-item">
-                    <div class="settings-left">
-                        <div class="settings-icon" style="background: var(--green);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg></div>
-                        <span class="settings-label">Use AI</span>
-                    </div>
-                    <div class="toggle" id="use-ai-toggle" onclick="toggleAI()"></div>
-                </div>
+                <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--purple)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg></div><div><div class="settings-label">OpenAI API Key</div><div class="settings-desc">For smart classification</div></div></div><input type="password" class="settings-input" id="api-key" placeholder="sk-..." oninput="saveApiKey()" style="width:90px"></div>
+                <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg></div><span class="settings-label">Use AI</span></div><div class="toggle" id="use-ai-toggle" onclick="toggleAI()"></div></div>
             </div>
-            
             <div class="section-header"><span class="section-title">Features</span></div>
             <div class="settings-group">
-                <div class="settings-item">
-                    <div class="settings-left">
-                        <div class="settings-icon" style="background: var(--orange);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
-                        <span class="settings-label">Find Similar</span>
-                    </div>
-                    <div class="toggle on" id="find-similar-toggle" onclick="this.classList.toggle('on');saveSettings()"></div>
-                </div>
-                <div class="settings-item">
-                    <div class="settings-left">
-                        <div class="settings-icon" style="background: var(--red);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
-                        <span class="settings-label">Location Detection</span>
-                    </div>
-                    <div class="toggle on" id="location-toggle" onclick="this.classList.toggle('on');saveSettings()"></div>
-                </div>
+                <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--orange)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div><div><div class="settings-label">Find Similar</div><div class="settings-desc">Search matching products</div></div></div><div class="toggle on" id="find-similar-toggle" onclick="this.classList.toggle('on');saveSettings()"></div></div>
+                <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--cyan)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div><div><div class="settings-label">Duplicate Detection</div><div class="settings-desc">Warn about similar screenshots</div></div></div><div class="toggle on" id="dupe-toggle" onclick="this.classList.toggle('on');saveSettings()"></div></div>
+                <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--pink)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div><div><div class="settings-label">Smart Tags</div><div class="settings-desc">Auto-tag for better search</div></div></div><div class="toggle on" id="tags-toggle" onclick="this.classList.toggle('on');saveSettings()"></div></div>
             </div>
-            
+            <div class="section-header"><span class="section-title">Image Quality</span></div>
+            <div class="settings-group">
+                <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--blue)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></div><div><div class="settings-label">Compress Images</div><div class="settings-desc">Reduce file size (~50% smaller)</div></div></div><div class="toggle on" id="compress-toggle" onclick="this.classList.toggle('on');saveSettings()"></div></div>
+                <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--yellow)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg></div><span class="settings-label">Max Width</span></div><select class="settings-input" id="max-width" onchange="saveSettings()" style="width:100px"><option value="1080">1080px</option><option value="720">720px</option><option value="480">480px</option></select></div>
+            </div>
             <div class="section-header"><span class="section-title">Currency</span></div>
             <div class="settings-group">
-                <div class="settings-item">
-                    <div class="settings-left">
-                        <div class="settings-icon" style="background: var(--yellow);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-                        <span class="settings-label">Currency</span>
-                    </div>
-                    <select class="settings-input" id="base-currency" onchange="saveSettings()" style="width:80px">
-                        <option value="USD">USD</option>
-                        <option value="THB">THB</option>
-                        <option value="EUR">EUR</option>
-                    </select>
-                </div>
-                <div class="settings-item">
-                    <div class="settings-left">
-                        <div class="settings-icon" style="background: var(--cyan);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></div>
-                        <span class="settings-label">THB Rate</span>
-                    </div>
-                    <input type="number" class="settings-input" id="exchange-rate" value="35.5" step="0.1" style="width:80px" oninput="saveSettings()">
-                </div>
+                <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--yellow)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><span class="settings-label">Currency</span></div><select class="settings-input" id="base-currency" onchange="saveSettings()" style="width:80px"><option value="USD">USD</option><option value="THB">THB</option><option value="EUR">EUR</option></select></div>
+                <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--cyan)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></div><span class="settings-label">THB Rate</span></div><input type="number" class="settings-input" id="exchange-rate" value="35.5" step="0.1" style="width:80px" oninput="saveSettings()"></div>
             </div>
-            
             <div class="section-header"><span class="section-title">Export</span></div>
             <div class="settings-group">
-                <div class="settings-item">
-                    <div class="settings-left">
-                        <div class="settings-icon" style="background: var(--red);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg></div>
-                        <div><div class="settings-label">Export PDF</div><div class="settings-desc">Expense report</div></div>
-                    </div>
-                    <span class="settings-value" onclick="exportPDF()">Export →</span>
-                </div>
-                <div class="settings-item">
-                    <div class="settings-left">
-                        <div class="settings-icon" style="background: var(--blue);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg></div>
-                        <div><div class="settings-label">Full Backup</div><div class="settings-desc">All data + screenshots</div></div>
-                    </div>
-                    <span class="settings-value" onclick="exportFull()">Export →</span>
-                </div>
-                <div class="settings-item">
-                    <div class="settings-left">
-                        <div class="settings-icon" style="background: var(--green);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg></div>
-                        <div><div class="settings-label">Import Backup</div><div class="settings-desc">Restore from file</div></div>
-                    </div>
-                    <span class="settings-value" onclick="importBackup()">Import →</span>
-                </div>
+                <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--red)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div><div class="settings-label">Export PDF</div><div class="settings-desc">Expense report</div></div></div><span class="settings-value" onclick="exportPDF()">Export →</span></div>
+                <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--blue)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg></div><div><div class="settings-label">Full Backup</div><div class="settings-desc">All data + images</div></div></div><span class="settings-value" onclick="exportFull()">Export →</span></div>
+                <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg></div><div><div class="settings-label">Import Backup</div><div class="settings-desc">Restore from file</div></div></div><span class="settings-value" onclick="importBackup()">Import →</span></div>
             </div>
-            
             <div class="section-header"><span class="section-title">Data</span></div>
             <div class="settings-group">
-                <div class="settings-item">
-                    <span class="settings-label">Storage Used</span>
-                    <span class="settings-value" id="storage-used">0 MB</span>
-                </div>
-                <div class="settings-item">
-                    <div class="settings-left">
-                        <div class="settings-icon" style="background: var(--red);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></div>
-                        <span class="settings-label">Clear All</span>
-                    </div>
-                    <span class="settings-value" onclick="clearData()">Clear →</span>
-                </div>
+                <div class="settings-item"><span class="settings-label">Storage</span><span class="settings-value" id="storage-used">0 MB</span></div>
+                <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--red)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></div><span class="settings-label">Clear All</span></div><span class="settings-value" onclick="clearData()">Clear →</span></div>
             </div>
         </div>
         
-        <!-- TAB BAR -->
         <div class="tabs">
             <div class="tabs-inner">
                 <div class="tab active" data-tab="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></div>
@@ -451,7 +300,6 @@
             </div>
         </div>
         
-        <!-- DETAIL MODAL -->
         <div class="modal" id="modal">
             <div class="modal-header">
                 <button class="modal-close" onclick="closeModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
@@ -460,48 +308,24 @@
             <div class="modal-img"><img id="modal-image" src=""></div>
             <div class="modal-info">
                 <div class="modal-type" id="modal-type"></div>
-                <div class="modal-title-row">
-                    <div class="modal-title" id="modal-title"></div>
-                    <button class="modal-edit" onclick="openEditModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>
-                </div>
+                <div class="modal-title-row"><div class="modal-title" id="modal-title"></div><button class="modal-edit" onclick="openEditModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button></div>
                 <div class="modal-subtitle" id="modal-subtitle"></div>
+                <div class="modal-tags" id="modal-tags"></div>
                 <div class="modal-actions" id="modal-actions"></div>
             </div>
         </div>
         
-        <!-- EDIT MODAL -->
         <div class="edit-modal" id="edit-modal">
             <div class="edit-box">
                 <div class="edit-title">Edit Item</div>
-                <div class="edit-field">
-                    <div class="edit-label">Title</div>
-                    <input type="text" class="edit-input" id="edit-title" placeholder="Enter title...">
-                </div>
-                <div class="edit-field">
-                    <div class="edit-label">Amount</div>
-                    <input type="number" class="edit-input" id="edit-amount" placeholder="0.00">
-                </div>
-                <div class="edit-field">
-                    <div class="edit-label">Type</div>
-                    <select class="edit-input" id="edit-type" style="width:100%">
-                        <option value="receipt">🧾 Receipt</option>
-                        <option value="bill">📄 Bill</option>
-                        <option value="product">🛍️ Want</option>
-                        <option value="food">🍜 Food Spot</option>
-                        <option value="cafe">☕ Cafe</option>
-                        <option value="place">📍 Place</option>
-                        <option value="travel">✈️ Travel</option>
-                        <option value="idea">💡 Idea</option>
-                        <option value="screenshot">📱 Screenshot</option>
-                    </select>
-                </div>
-                <div class="edit-actions">
-                    <button class="edit-btn cancel" onclick="closeEditModal()">Cancel</button>
-                    <button class="edit-btn save" onclick="saveEdit()">Save</button>
-                </div>
+                <div class="edit-field"><div class="edit-label">Title</div><input type="text" class="edit-input" id="edit-title" placeholder="Enter title..."></div>
+                <div class="edit-field"><div class="edit-label">Amount</div><input type="number" class="edit-input" id="edit-amount" placeholder="0.00"></div>
+                <div class="edit-field"><div class="edit-label">Type</div><select class="edit-input" id="edit-type" style="width:100%"><option value="receipt">🧾 Receipt</option><option value="bill">📄 Bill</option><option value="product">🛍️ Want</option><option value="food">🍜 Food</option><option value="cafe">☕ Cafe</option><option value="place">📍 Place</option><option value="travel">✈️ Travel</option><option value="idea">💡 Idea</option><option value="screenshot">📱 Screenshot</option></select></div>
+                <div class="edit-actions"><button class="edit-btn cancel" onclick="closeEditModal()">Cancel</button><button class="edit-btn save" onclick="saveEdit()">Save</button></div>
             </div>
         </div>
         
+        <div class="processing" id="processing"><div class="spinner"></div><div class="processing-text">Processing...</div></div>
         <div class="toast" id="toast"></div>
     </div>
     
@@ -509,334 +333,257 @@
     <input type="file" id="import-input" accept=".json">
 
 <script>
-let items = JSON.parse(localStorage.getItem('stashd_items') || '[]');
-let activeFilter = 'all';
-let currentItemId = null;
-let currentPeriod = 'week';
-let settings = JSON.parse(localStorage.getItem('stashd_settings') || '{}');
+let items=JSON.parse(localStorage.getItem('stashd_items')||'[]');
+let activeFilter='all',currentItemId=null,currentPeriod='week',deferredPrompt=null;
+let settings=JSON.parse(localStorage.getItem('stashd_settings')||'{}');
+settings.exchangeRate=settings.exchangeRate||35.5;
+settings.baseCurrency=settings.baseCurrency||'USD';
+settings.useAI=settings.useAI||false;
+settings.findSimilar=settings.findSimilar!==false;
+settings.duplicateDetection=settings.duplicateDetection!==false;
+settings.smartTags=settings.smartTags!==false;
+settings.compress=settings.compress!==false;
+settings.maxWidth=settings.maxWidth||1080;
 
-settings.exchangeRate = settings.exchangeRate || 35.5;
-settings.baseCurrency = settings.baseCurrency || 'USD';
-settings.useAI = settings.useAI || false;
-settings.findSimilar = settings.findSimilar !== false;
-settings.locationDetection = settings.locationDetection !== false;
+const TYPES={receipt:{icon:'🧾',label:'Receipt',color:'#22c55e'},bill:{icon:'📄',label:'Bill',color:'#ef4444'},product:{icon:'🛍️',label:'Want',color:'#f97316'},food:{icon:'🍜',label:'Food',color:'#ec4899'},cafe:{icon:'☕',label:'Cafe',color:'#8b5cf6'},place:{icon:'📍',label:'Place',color:'#3b82f6'},travel:{icon:'✈️',label:'Travel',color:'#06b6d4'},transfer:{icon:'💸',label:'Transfer',color:'#a855f7'},idea:{icon:'💡',label:'Idea',color:'#eab308'},screenshot:{icon:'📱',label:'Screenshot',color:'#6b7280'}};
+const PLACE_TYPES=['food','cafe','place','travel'];
+const CATEGORIES=[{id:'food',name:'Food & Dining',icon:'🍜',color:'#ec4899'},{id:'shopping',name:'Shopping',icon:'🛍️',color:'#f97316'},{id:'transport',name:'Transport',icon:'🚗',color:'#22c55e'},{id:'utilities',name:'Utilities',icon:'💡',color:'#eab308'},{id:'entertainment',name:'Entertainment',icon:'🎬',color:'#a855f7'},{id:'other',name:'Other',icon:'📦',color:'#6b7280'}];
 
-const TYPES = {
-    receipt: { icon: '🧾', label: 'Receipt', color: '#22c55e' },
-    bill: { icon: '📄', label: 'Bill', color: '#ef4444' },
-    product: { icon: '🛍️', label: 'Want', color: '#f97316' },
-    food: { icon: '🍜', label: 'Food', color: '#ec4899' },
-    cafe: { icon: '☕', label: 'Cafe', color: '#8b5cf6' },
-    place: { icon: '📍', label: 'Place', color: '#3b82f6' },
-    travel: { icon: '✈️', label: 'Travel', color: '#06b6d4' },
-    transfer: { icon: '💸', label: 'Transfer', color: '#a855f7' },
-    idea: { icon: '💡', label: 'Idea', color: '#eab308' },
-    screenshot: { icon: '📱', label: 'Screenshot', color: '#6b7280' }
-};
+// PWA Install
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('install-banner').classList.remove('hidden');});
+function installApp(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;hideInstall();});}}
+function hideInstall(){document.getElementById('install-banner').classList.add('hidden');localStorage.setItem('stashd_hideInstall','1');}
+if(localStorage.getItem('stashd_hideInstall')||window.matchMedia('(display-mode:standalone)').matches)document.getElementById('install-banner')?.classList.add('hidden');
 
-const PLACE_TYPES = ['food', 'cafe', 'place', 'travel'];
+// Service Worker
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 
-const CATEGORIES = [
-    { id: 'food', name: 'Food & Dining', icon: '🍜', color: '#ec4899' },
-    { id: 'shopping', name: 'Shopping', icon: '🛍️', color: '#f97316' },
-    { id: 'transport', name: 'Transport', icon: '🚗', color: '#22c55e' },
-    { id: 'utilities', name: 'Utilities', icon: '💡', color: '#eab308' },
-    { id: 'entertainment', name: 'Entertainment', icon: '🎬', color: '#a855f7' },
-    { id: 'other', name: 'Other', icon: '📦', color: '#6b7280' }
-];
-
-function convertCurrency(amount, from) {
-    const rate = parseFloat(settings.exchangeRate) || 35.5;
-    if (from === 'THB' && settings.baseCurrency === 'USD') return amount / rate;
-    if (from === 'USD' && settings.baseCurrency === 'THB') return amount * rate;
-    return amount;
+// Image compression
+async function compressImage(dataUrl,maxWidth=1080,quality=0.7){
+    return new Promise(resolve=>{
+        const img=new Image();
+        img.onload=()=>{
+            const canvas=document.createElement('canvas');
+            let w=img.width,h=img.height;
+            if(w>maxWidth){h=h*(maxWidth/w);w=maxWidth;}
+            canvas.width=w;canvas.height=h;
+            canvas.getContext('2d').drawImage(img,0,0,w,h);
+            resolve(canvas.toDataURL('image/jpeg',quality));
+        };
+        img.src=dataUrl;
+    });
 }
 
-function formatCurrency(amount, currency) {
-    const symbols = { USD: '$', THB: '฿', EUR: '€' };
-    return (symbols[currency] || '') + amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+// Simple image hash for duplicate detection
+function imageHash(dataUrl){
+    const sample=dataUrl.substring(dataUrl.length-1000);
+    let hash=0;
+    for(let i=0;i<sample.length;i++){hash=((hash<<5)-hash)+sample.charCodeAt(i);hash|=0;}
+    return hash.toString(36);
 }
 
-async function classifyWithAI(img) {
-    const apiKey = localStorage.getItem('stashd_apikey');
-    if (!apiKey) return null;
-    try {
-        const r = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-            body: JSON.stringify({
-                model: 'gpt-4o-mini',
-                messages: [{ role: 'user', content: [
-                    { type: 'text', text: `Analyze screenshot. Return JSON: {"type":"receipt|bill|product|food|cafe|place|travel|idea|screenshot","title":"title","amount":number|null,"currency":"THB|USD"|null,"location":{"name":"","address":""}|null,"category":"food|shopping|transport|utilities|entertainment|other"}` },
-                    { type: 'image_url', image_url: { url: img } }
-                ]}],
-                max_tokens: 300
-            })
-        });
-        const data = await r.json();
-        if (data.error) return null;
-        const match = data.choices[0].message.content.match(/\{[\s\S]*\}/);
-        return match ? JSON.parse(match[0]) : null;
-    } catch (e) { return null; }
+function findDuplicate(hash){
+    if(!settings.duplicateDetection)return null;
+    return items.find(i=>i.hash===hash);
 }
 
-function mockClassify() {
-    const types = Object.keys(TYPES);
-    const typeId = types[Math.floor(Math.random() * types.length)];
-    const titles = { receipt: ['Grab Food', 'Starbucks'], bill: ['Electric', 'Internet'], product: ['Nike Shoes', 'AirPods'], food: ['Sushi Place', 'Thai Restaurant'], cafe: ['Roots Coffee'], place: ['Chatuchak'], travel: ['Beach Resort'], idea: ['App idea'], screenshot: ['Screenshot'] };
-    const hasAmount = ['receipt', 'bill', 'product', 'transfer'].includes(typeId);
-    const isPlace = PLACE_TYPES.includes(typeId);
-    return { type: typeId, title: titles[typeId]?.[0] || 'Item', amount: hasAmount ? Math.floor(Math.random() * 2000) + 50 : null, currency: 'THB', location: isPlace ? { name: titles[typeId]?.[0], address: 'Bangkok' } : null, category: 'other' };
+// Smart tags extraction
+function extractTags(title,type){
+    if(!settings.smartTags)return[];
+    const tags=[];
+    const lower=title?.toLowerCase()||'';
+    const keywords={food:['restaurant','cafe','food','eat','dinner','lunch','breakfast'],shopping:['buy','shop','store','mall','price','sale'],travel:['hotel','flight','trip','vacation','beach'],bill:['bill','payment','invoice','due']};
+    Object.entries(keywords).forEach(([cat,words])=>{words.forEach(w=>{if(lower.includes(w)&&!tags.includes(cat))tags.push(cat);});});
+    if(TYPES[type])tags.push(TYPES[type].label.toLowerCase());
+    return tags.slice(0,5);
 }
 
-async function processImage(dataUrl) {
-    let c = settings.useAI ? await classifyWithAI(dataUrl) : null;
-    if (!c) c = mockClassify();
-    const type = TYPES[c.type] || TYPES.screenshot;
-    return { id: Date.now() + Math.random(), uri: dataUrl, time: Date.now(), typeId: c.type, type, title: c.title, amountOriginal: c.amount, currencyOriginal: c.currency || 'THB', amountConverted: c.amount ? convertCurrency(c.amount, c.currency || 'THB') : null, location: c.location, category: c.category || 'other' };
+function convertCurrency(amount,from){const rate=parseFloat(settings.exchangeRate)||35.5;if(from==='THB'&&settings.baseCurrency==='USD')return amount/rate;if(from==='USD'&&settings.baseCurrency==='THB')return amount*rate;return amount;}
+function formatCurrency(amount,currency){const symbols={USD:'$',THB:'฿',EUR:'€'};return(symbols[currency]||'')+amount.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
+
+async function classifyWithAI(img){
+    const apiKey=localStorage.getItem('stashd_apikey');
+    if(!apiKey)return null;
+    try{
+        const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},body:JSON.stringify({model:'gpt-4o-mini',messages:[{role:'user',content:[{type:'text',text:`Analyze screenshot. Return JSON: {"type":"receipt|bill|product|food|cafe|place|travel|idea|screenshot","title":"title","amount":number|null,"currency":"THB|USD"|null,"location":{"name":"","address":""}|null,"category":"food|shopping|transport|utilities|entertainment|other","tags":["tag1","tag2"]}`},{type:'image_url',image_url:{url:img}}]}],max_tokens:300})});
+        const data=await r.json();
+        if(data.error)return null;
+        const match=data.choices[0].message.content.match(/\{[\s\S]*\}/);
+        return match?JSON.parse(match[0]):null;
+    }catch(e){return null;}
 }
 
-function pickFiles() { document.getElementById('file-input').click(); }
-function toast(msg) { const t = document.getElementById('toast'); t.innerHTML = `✓ ${msg}`; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
-function switchTab(tab) { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden')); document.querySelector(`.tab[data-tab="${tab}"]`)?.classList.add('active'); document.getElementById(tab)?.classList.remove('hidden'); }
-function timeAgo(d) { const m = Math.floor((Date.now() - d) / 60000); if (m < 1) return 'now'; if (m < 60) return m + 'm'; if (m < 1440) return Math.floor(m/60) + 'h'; return Math.floor(m/1440) + 'd'; }
-
-function toggleAnalytics() { document.getElementById('analytics').classList.toggle('expanded'); }
-
-function setPeriod(p) {
-    currentPeriod = p;
-    document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
-    event.target.classList.add('active');
-    renderAnalytics();
+function mockClassify(){
+    const types=Object.keys(TYPES);
+    const typeId=types[Math.floor(Math.random()*types.length)];
+    const titles={receipt:['Grab Food','Starbucks'],bill:['Electric','Internet'],product:['Nike Shoes','AirPods'],food:['Sushi Place','Thai Restaurant'],cafe:['Roots Coffee'],place:['Chatuchak'],travel:['Beach Resort'],idea:['App idea'],screenshot:['Screenshot']};
+    const hasAmount=['receipt','bill','product','transfer'].includes(typeId);
+    const isPlace=PLACE_TYPES.includes(typeId);
+    return{type:typeId,title:titles[typeId]?.[0]||'Item',amount:hasAmount?Math.floor(Math.random()*2000)+50:null,currency:'THB',location:isPlace?{name:titles[typeId]?.[0],address:'Bangkok'}:null,category:'other',tags:[]};
 }
 
-function renderAnalytics() {
-    const now = Date.now();
-    const week = 7 * 24 * 60 * 60 * 1000;
-    const month = 30 * 24 * 60 * 60 * 1000;
+async function processImage(dataUrl){
+    // Compress if enabled
+    if(settings.compress){
+        dataUrl=await compressImage(dataUrl,parseInt(settings.maxWidth)||1080);
+    }
     
-    let filtered = items.filter(i => i.amountConverted);
-    if (currentPeriod === 'week') filtered = filtered.filter(i => now - i.time < week);
-    else if (currentPeriod === 'month') filtered = filtered.filter(i => now - i.time < month);
+    // Check for duplicates
+    const hash=imageHash(dataUrl);
+    const dupe=findDuplicate(hash);
     
-    const total = filtered.reduce((s, i) => s + i.amountConverted, 0);
-    const labels = { week: 'This Week', month: 'This Month', all: 'All Time' };
+    let c=settings.useAI?await classifyWithAI(dataUrl):null;
+    if(!c)c=mockClassify();
     
-    document.getElementById('period-label').textContent = labels[currentPeriod];
-    document.getElementById('period-total').textContent = formatCurrency(total, settings.baseCurrency);
+    const type=TYPES[c.type]||TYPES.screenshot;
+    const tags=c.tags?.length?c.tags:extractTags(c.title,c.type);
     
-    const catTotals = {};
-    filtered.forEach(i => { catTotals[i.category || 'other'] = (catTotals[i.category || 'other'] || 0) + i.amountConverted; });
-    const maxCat = Math.max(...Object.values(catTotals), 1);
-    
-    document.getElementById('category-breakdown').innerHTML = CATEGORIES.filter(c => catTotals[c.id]).map(c => `
-        <div class="category-item">
-            <div class="category-icon">${c.icon}</div>
-            <div class="category-info">
-                <div class="category-name">${c.name}</div>
-                <div class="category-bar"><div class="category-fill" style="width:${(catTotals[c.id]/maxCat)*100}%;background:${c.color}"></div></div>
-            </div>
-            <div style="text-align:right">
-                <div class="category-value">${formatCurrency(catTotals[c.id], settings.baseCurrency)}</div>
-                <div class="category-count">${filtered.filter(i => i.category === c.id).length} items</div>
-            </div>
-        </div>
-    `).join('') || '<div style="padding:20px;text-align:center;color:var(--text2)">No data</div>';
+    return{
+        id:Date.now()+Math.random(),
+        uri:dataUrl,
+        hash,
+        time:Date.now(),
+        typeId:c.type,
+        type,
+        title:c.title,
+        amountOriginal:c.amount,
+        currencyOriginal:c.currency||'THB',
+        amountConverted:c.amount?convertCurrency(c.amount,c.currency||'THB'):null,
+        location:c.location,
+        category:c.category||'other',
+        tags,
+        isDuplicate:!!dupe,
+        duplicateOf:dupe?.id
+    };
 }
 
-function openModal(itemId) {
-    const item = items.find(i => i.id === itemId);
-    if (!item) return;
-    currentItemId = itemId;
-    document.getElementById('modal-image').src = item.uri;
-    document.getElementById('modal-type').innerHTML = `${item.type?.icon || '📱'} ${item.type?.label || 'Item'}`;
-    document.getElementById('modal-type').style.background = (item.type?.color || '#666') + '30';
-    document.getElementById('modal-type').style.color = item.type?.color || '#666';
-    document.getElementById('modal-title').textContent = item.title || 'Untitled';
-    document.getElementById('modal-subtitle').textContent = item.location?.address || (item.amountOriginal ? formatCurrency(item.amountOriginal, item.currencyOriginal) : 'No value');
-    
-    let actions = '';
-    if (item.typeId === 'product' && settings.findSimilar) actions += `<button class="modal-btn blue" onclick="findSimilar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Find</button>`;
-    if (item.location && settings.locationDetection) actions += `<button class="modal-btn orange" onclick="openMaps()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/></svg>Map</button>`;
-    actions += `<button class="modal-btn" onclick="openReminder()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>Remind</button>`;
-    actions += `<button class="modal-btn primary" onclick="closeModal()">Done</button>`;
-    document.getElementById('modal-actions').innerHTML = actions;
+function showProcessing(show){document.getElementById('processing').classList.toggle('show',show);}
+function pickFiles(){document.getElementById('file-input').click();}
+function toast(msg){const t=document.getElementById('toast');t.innerHTML=`✓ ${msg}`;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function switchTab(tab){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));document.querySelector(`.tab[data-tab="${tab}"]`)?.classList.add('active');document.getElementById(tab)?.classList.remove('hidden');}
+function timeAgo(d){const m=Math.floor((Date.now()-d)/60000);if(m<1)return'now';if(m<60)return m+'m';if(m<1440)return Math.floor(m/60)+'h';return Math.floor(m/1440)+'d';}
+function toggleAnalytics(){document.getElementById('analytics').classList.toggle('expanded');}
+function setPeriod(p,el){currentPeriod=p;document.querySelectorAll('.period-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderAnalytics();}
+
+function renderAnalytics(){
+    const now=Date.now(),week=7*24*60*60*1000,month=30*24*60*60*1000;
+    let filtered=items.filter(i=>i.amountConverted);
+    if(currentPeriod==='week')filtered=filtered.filter(i=>now-i.time<week);
+    else if(currentPeriod==='month')filtered=filtered.filter(i=>now-i.time<month);
+    const total=filtered.reduce((s,i)=>s+i.amountConverted,0);
+    document.getElementById('period-label').textContent={week:'This Week',month:'This Month',all:'All Time'}[currentPeriod];
+    document.getElementById('period-total').textContent=formatCurrency(total,settings.baseCurrency);
+    const catTotals={};
+    filtered.forEach(i=>{catTotals[i.category||'other']=(catTotals[i.category||'other']||0)+i.amountConverted;});
+    const maxCat=Math.max(...Object.values(catTotals),1);
+    document.getElementById('category-breakdown').innerHTML=CATEGORIES.filter(c=>catTotals[c.id]).map(c=>`<div class="category-item"><div class="category-icon">${c.icon}</div><div class="category-info"><div class="category-name">${c.name}</div><div class="category-bar"><div class="category-fill" style="width:${(catTotals[c.id]/maxCat)*100}%;background:${c.color}"></div></div></div><div style="text-align:right"><div class="category-value">${formatCurrency(catTotals[c.id],settings.baseCurrency)}</div><div class="category-count">${filtered.filter(i=>i.category===c.id).length} items</div></div></div>`).join('')||'<div style="padding:20px;text-align:center;color:var(--text2)">No data</div>';
+}
+
+function openModal(itemId){
+    const item=items.find(i=>i.id===itemId);
+    if(!item)return;
+    currentItemId=itemId;
+    document.getElementById('modal-image').src=item.uri;
+    document.getElementById('modal-type').innerHTML=`${item.type?.icon||'📱'} ${item.type?.label||'Item'}`;
+    document.getElementById('modal-type').style.background=(item.type?.color||'#666')+'30';
+    document.getElementById('modal-type').style.color=item.type?.color||'#666';
+    document.getElementById('modal-title').textContent=item.title||'Untitled';
+    document.getElementById('modal-subtitle').textContent=item.location?.address||(item.amountOriginal?formatCurrency(item.amountOriginal,item.currencyOriginal):'No value');
+    document.getElementById('modal-tags').innerHTML=(item.tags||[]).map(t=>`<span class="modal-tag">${t}</span>`).join('');
+    let actions='';
+    if(item.typeId==='product'&&settings.findSimilar)actions+=`<button class="modal-btn blue" onclick="findSimilar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Find</button>`;
+    if(item.location)actions+=`<button class="modal-btn orange" onclick="openMaps()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/></svg>Map</button>`;
+    actions+=`<button class="modal-btn" onclick="openReminder()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>Remind</button>`;
+    actions+=`<button class="modal-btn primary" onclick="closeModal()">Done</button>`;
+    document.getElementById('modal-actions').innerHTML=actions;
     document.getElementById('modal').classList.add('show');
 }
 
-function closeModal() { document.getElementById('modal').classList.remove('show'); currentItemId = null; }
+function closeModal(){document.getElementById('modal').classList.remove('show');currentItemId=null;}
+function openEditModal(){const item=items.find(i=>i.id===currentItemId);if(!item)return;document.getElementById('edit-title').value=item.title||'';document.getElementById('edit-amount').value=item.amountOriginal||'';document.getElementById('edit-type').value=item.typeId||'screenshot';document.getElementById('edit-modal').classList.add('show');}
+function closeEditModal(){document.getElementById('edit-modal').classList.remove('show');}
+function saveEdit(){const item=items.find(i=>i.id===currentItemId);if(!item)return;item.title=document.getElementById('edit-title').value;item.amountOriginal=parseFloat(document.getElementById('edit-amount').value)||null;item.amountConverted=item.amountOriginal?convertCurrency(item.amountOriginal,item.currencyOriginal):null;item.typeId=document.getElementById('edit-type').value;item.type=TYPES[item.typeId]||TYPES.screenshot;item.location=PLACE_TYPES.includes(item.typeId)?{name:item.title,address:''}:null;item.tags=extractTags(item.title,item.typeId);saveItems();closeEditModal();openModal(currentItemId);render();toast('Saved');}
+function deleteCurrentItem(){if(!currentItemId)return;items=items.filter(i=>i.id!==currentItemId);saveItems();closeModal();render();toast('Deleted');}
+function findSimilar(){window.open('https://lens.google.com/','_blank');toast('Open Google Lens');}
+function openMaps(){const item=items.find(i=>i.id===currentItemId);if(!item?.location)return;window.open(`https://www.google.com/maps/search/${encodeURIComponent(item.location.name)}`,'_blank');}
+function openReminder(){const item=items.find(i=>i.id===currentItemId);if(!item)return;window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(item.title)}`,'_blank');toast('Calendar opened');}
 
-function openEditModal() {
-    const item = items.find(i => i.id === currentItemId);
-    if (!item) return;
-    document.getElementById('edit-title').value = item.title || '';
-    document.getElementById('edit-amount').value = item.amountOriginal || '';
-    document.getElementById('edit-type').value = item.typeId || 'screenshot';
-    document.getElementById('edit-modal').classList.add('show');
+function exportPDF(){
+    const valued=items.filter(i=>i.amountConverted);
+    const total=valued.reduce((s,i)=>s+i.amountConverted,0);
+    let html=`<html><head><title>Stashd Report</title><style>body{font-family:Arial;padding:40px}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{border:1px solid #ddd;padding:12px;text-align:left}th{background:#f5f5f5}.total{font-size:24px;margin:20px 0}</style></head><body><h1>Stashd Expense Report</h1><p>${new Date().toLocaleDateString()}</p><div class="total">Total: ${formatCurrency(total,settings.baseCurrency)}</div><table><tr><th>Date</th><th>Item</th><th>Type</th><th>Tags</th><th>Amount</th></tr>`;
+    valued.forEach(i=>{html+=`<tr><td>${new Date(i.time).toLocaleDateString()}</td><td>${i.title}</td><td>${i.type?.label||'Other'}</td><td>${(i.tags||[]).join(', ')}</td><td>${formatCurrency(i.amountConverted,settings.baseCurrency)}</td></tr>`;});
+    html+=`</table></body></html>`;
+    const w=window.open('','_blank');w.document.write(html);w.document.close();w.print();toast('Print dialog opened');
 }
 
-function closeEditModal() { document.getElementById('edit-modal').classList.remove('show'); }
+function exportFull(){const data=JSON.stringify({version:'3.1',exported:new Date().toISOString(),settings,items},null,2);const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));a.download=`stashd-backup-${new Date().toISOString().split('T')[0]}.json`;a.click();toast('Backup downloaded');}
+function importBackup(){document.getElementById('import-input').click();}
+document.getElementById('import-input').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{const text=await file.text();const data=JSON.parse(text);if(data.items&&Array.isArray(data.items)){if(confirm(`Import ${data.items.length} items?`)){items=[...data.items,...items];if(data.settings)Object.assign(settings,data.settings);saveItems();saveSettings();render();toast(`Imported ${data.items.length} items`);}}}catch(err){toast('Invalid file');}e.target.value='';});
+function clearData(){if(confirm('Delete all data?')){items=[];saveItems();render();toast('Cleared');}}
+function saveApiKey(){const key=document.getElementById('api-key').value;if(key)localStorage.setItem('stashd_apikey',key);else localStorage.removeItem('stashd_apikey');}
+function toggleAI(){document.getElementById('use-ai-toggle').classList.toggle('on');settings.useAI=document.getElementById('use-ai-toggle').classList.contains('on');saveSettings();}
+function saveSettings(){settings.exchangeRate=parseFloat(document.getElementById('exchange-rate').value)||35.5;settings.baseCurrency=document.getElementById('base-currency').value;settings.findSimilar=document.getElementById('find-similar-toggle').classList.contains('on');settings.duplicateDetection=document.getElementById('dupe-toggle').classList.contains('on');settings.smartTags=document.getElementById('tags-toggle').classList.contains('on');settings.compress=document.getElementById('compress-toggle').classList.contains('on');settings.maxWidth=document.getElementById('max-width').value;localStorage.setItem('stashd_settings',JSON.stringify(settings));render();}
+function loadSettings(){const key=localStorage.getItem('stashd_apikey');if(key)document.getElementById('api-key').value=key;document.getElementById('exchange-rate').value=settings.exchangeRate;document.getElementById('base-currency').value=settings.baseCurrency;document.getElementById('max-width').value=settings.maxWidth||1080;if(settings.useAI)document.getElementById('use-ai-toggle').classList.add('on');if(!settings.findSimilar)document.getElementById('find-similar-toggle').classList.remove('on');if(!settings.duplicateDetection)document.getElementById('dupe-toggle').classList.remove('on');if(!settings.smartTags)document.getElementById('tags-toggle').classList.remove('on');if(!settings.compress)document.getElementById('compress-toggle').classList.remove('on');}
+function saveItems(){localStorage.setItem('stashd_items',JSON.stringify(items));}
 
-function saveEdit() {
-    const item = items.find(i => i.id === currentItemId);
-    if (!item) return;
-    item.title = document.getElementById('edit-title').value;
-    item.amountOriginal = parseFloat(document.getElementById('edit-amount').value) || null;
-    item.amountConverted = item.amountOriginal ? convertCurrency(item.amountOriginal, item.currencyOriginal) : null;
-    item.typeId = document.getElementById('edit-type').value;
-    item.type = TYPES[item.typeId] || TYPES.screenshot;
-    item.location = PLACE_TYPES.includes(item.typeId) ? { name: item.title, address: '' } : null;
-    saveItems();
-    closeEditModal();
-    openModal(currentItemId);
-    render();
-    toast('Saved');
-}
-
-function deleteCurrentItem() { if (!currentItemId) return; items = items.filter(i => i.id !== currentItemId); saveItems(); closeModal(); render(); toast('Deleted'); }
-function findSimilar() { window.open('https://lens.google.com/', '_blank'); toast('Open Google Lens'); }
-function openMaps() { const item = items.find(i => i.id === currentItemId); if (!item?.location) return; window.open(`https://www.google.com/maps/search/${encodeURIComponent(item.location.name)}`, '_blank'); }
-function openReminder() { const item = items.find(i => i.id === currentItemId); if (!item) return; window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(item.title)}`, '_blank'); toast('Calendar opened'); }
-
-function exportPDF() {
-    const valued = items.filter(i => i.amountConverted);
-    const total = valued.reduce((s, i) => s + i.amountConverted, 0);
-    let html = `<html><head><title>Stashd Expense Report</title><style>body{font-family:Arial;padding:40px}h1{margin-bottom:10px}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{border:1px solid #ddd;padding:12px;text-align:left}th{background:#f5f5f5}.total{font-size:24px;margin:20px 0}</style></head><body>`;
-    html += `<h1>Stashd Expense Report</h1><p>Generated: ${new Date().toLocaleDateString()}</p>`;
-    html += `<div class="total">Total: ${formatCurrency(total, settings.baseCurrency)}</div>`;
-    html += `<table><tr><th>Date</th><th>Item</th><th>Type</th><th>Amount</th></tr>`;
-    valued.forEach(i => { html += `<tr><td>${new Date(i.time).toLocaleDateString()}</td><td>${i.title}</td><td>${i.type?.label || 'Other'}</td><td>${formatCurrency(i.amountConverted, settings.baseCurrency)}</td></tr>`; });
-    html += `</table></body></html>`;
-    const w = window.open('', '_blank');
-    w.document.write(html);
-    w.document.close();
-    w.print();
-    toast('Print dialog opened');
-}
-
-function exportFull() {
-    const data = JSON.stringify({ version: '3.0', exported: new Date().toISOString(), settings, items }, null, 2);
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
-    a.download = `stashd-backup-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    toast('Backup downloaded');
-}
-
-function importBackup() { document.getElementById('import-input').click(); }
-
-document.getElementById('import-input').addEventListener('change', async e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    try {
-        const text = await file.text();
-        const data = JSON.parse(text);
-        if (data.items && Array.isArray(data.items)) {
-            if (confirm(`Import ${data.items.length} items? This will add to your existing data.`)) {
-                items = [...data.items, ...items];
-                if (data.settings) Object.assign(settings, data.settings);
-                saveItems();
-                saveSettings();
-                render();
-                toast(`Imported ${data.items.length} items`);
-            }
-        }
-    } catch (err) { toast('Invalid backup file'); }
-    e.target.value = '';
-});
-
-function clearData() { if (confirm('Delete all data?')) { items = []; saveItems(); render(); toast('Cleared'); } }
-function saveApiKey() { const key = document.getElementById('api-key').value; if (key) localStorage.setItem('stashd_apikey', key); else localStorage.removeItem('stashd_apikey'); }
-function toggleAI() { document.getElementById('use-ai-toggle').classList.toggle('on'); settings.useAI = document.getElementById('use-ai-toggle').classList.contains('on'); saveSettings(); }
-function saveSettings() { settings.exchangeRate = parseFloat(document.getElementById('exchange-rate').value) || 35.5; settings.baseCurrency = document.getElementById('base-currency').value; settings.findSimilar = document.getElementById('find-similar-toggle').classList.contains('on'); settings.locationDetection = document.getElementById('location-toggle').classList.contains('on'); localStorage.setItem('stashd_settings', JSON.stringify(settings)); render(); }
-function loadSettings() { const key = localStorage.getItem('stashd_apikey'); if (key) document.getElementById('api-key').value = key; document.getElementById('exchange-rate').value = settings.exchangeRate; document.getElementById('base-currency').value = settings.baseCurrency; if (settings.useAI) document.getElementById('use-ai-toggle').classList.add('on'); if (!settings.findSimilar) document.getElementById('find-similar-toggle').classList.remove('on'); if (!settings.locationDetection) document.getElementById('location-toggle').classList.remove('on'); }
-function saveItems() { localStorage.setItem('stashd_items', JSON.stringify(items)); }
-
-document.getElementById('file-input').addEventListener('change', async e => {
-    const files = [...e.target.files];
-    if (!files.length) return;
-    toast(`Processing ${files.length}...`);
-    for (const file of files) {
-        const dataUrl = await new Promise(r => { const rd = new FileReader(); rd.onload = e => r(e.target.result); rd.readAsDataURL(file); });
-        items.unshift(await processImage(dataUrl));
+document.getElementById('file-input').addEventListener('change',async e=>{
+    const files=[...e.target.files];
+    if(!files.length)return;
+    showProcessing(true);
+    let dupes=0;
+    for(const file of files){
+        const dataUrl=await new Promise(r=>{const rd=new FileReader();rd.onload=e=>r(e.target.result);rd.readAsDataURL(file);});
+        const item=await processImage(dataUrl);
+        if(item.isDuplicate)dupes++;
+        items.unshift(item);
         render();
     }
     saveItems();
-    toast(`${files.length} added`);
-    e.target.value = '';
+    showProcessing(false);
+    toast(`${files.length} added${dupes?` (${dupes} duplicate${dupes>1?'s':''})`:''}`)
+    e.target.value='';
 });
 
-document.querySelectorAll('.tab').forEach(t => { t.onclick = () => switchTab(t.dataset.tab); });
+document.querySelectorAll('.tab').forEach(t=>{t.onclick=()=>switchTab(t.dataset.tab);});
+document.querySelectorAll('#places .filter').forEach(f=>{f.onclick=()=>{document.querySelectorAll('#places .filter').forEach(x=>x.classList.remove('active'));f.classList.add('active');renderPlaces(f.dataset.filter);};});
 
-document.querySelectorAll('#places .filter').forEach(f => {
-    f.onclick = () => {
-        document.querySelectorAll('#places .filter').forEach(x => x.classList.remove('active'));
-        f.classList.add('active');
-        renderPlaces(f.dataset.filter);
-    };
-});
-
-function renderPlaces(filter = 'all') {
-    const places = items.filter(i => i.location);
-    const filtered = filter === 'all' ? places : places.filter(i => i.typeId === filter);
-    document.getElementById('places-count').textContent = `${places.length} location${places.length !== 1 ? 's' : ''}`;
-    document.getElementById('places-list').innerHTML = filtered.length ? filtered.map(i => `
-        <div class="place-item" onclick="openModal(${i.id})">
-            <div class="place-icon" style="background:${i.type?.color || '#666'}30">${i.type?.icon || '📍'}</div>
-            <div class="place-content">
-                <div class="place-name">${i.location?.name || i.title}</div>
-                <div class="place-address">${i.location?.address || 'Tap to view'}</div>
-            </div>
-        </div>
-    `).join('') : '<div class="empty"><div class="empty-title">No places</div><div class="empty-text">Save restaurant or travel screenshots</div></div>';
+function renderPlaces(filter='all'){
+    const places=items.filter(i=>i.location);
+    const filtered=filter==='all'?places:places.filter(i=>i.typeId===filter);
+    document.getElementById('places-count').textContent=`${places.length} location${places.length!==1?'s':''}`;
+    document.getElementById('places-list').innerHTML=filtered.length?filtered.map(i=>`<div class="place-item" onclick="openModal(${i.id})"><div class="place-icon" style="background:${i.type?.color||'#666'}30">${i.type?.icon||'📍'}</div><div class="place-content"><div class="place-name">${i.location?.name||i.title}</div><div class="place-address">${i.location?.address||'Tap to view'}</div></div></div>`).join(''):'<div class="empty"><div class="empty-title">No places</div></div>';
 }
 
-function render() {
-    const valued = items.filter(i => i.amountConverted);
-    const total = valued.reduce((s, i) => s + i.amountConverted, 0);
-    const places = items.filter(i => i.location);
-    
-    document.getElementById('home-total').textContent = formatCurrency(total, settings.baseCurrency);
-    document.getElementById('home-count').textContent = `${items.length} item${items.length !== 1 ? 's' : ''}`;
-    document.getElementById('stat-wants').textContent = items.filter(i => i.typeId === 'product').length;
-    document.getElementById('stat-places').textContent = places.length;
-    document.getElementById('stat-receipts').textContent = items.filter(i => ['receipt', 'bill'].includes(i.typeId)).length;
-    document.getElementById('stat-ideas').textContent = items.filter(i => i.typeId === 'idea').length;
-    
+function render(){
+    const valued=items.filter(i=>i.amountConverted);
+    const total=valued.reduce((s,i)=>s+i.amountConverted,0);
+    document.getElementById('home-total').textContent=formatCurrency(total,settings.baseCurrency);
+    document.getElementById('home-count').textContent=`${items.length} item${items.length!==1?'s':''}`;
+    document.getElementById('stat-wants').textContent=items.filter(i=>i.typeId==='product').length;
+    document.getElementById('stat-places').textContent=items.filter(i=>i.location).length;
+    document.getElementById('stat-receipts').textContent=items.filter(i=>['receipt','bill'].includes(i.typeId)).length;
+    document.getElementById('stat-ideas').textContent=items.filter(i=>i.typeId==='idea').length;
     renderAnalytics();
     
-    document.getElementById('home-recent').innerHTML = items.slice(0, 5).map(i => `
-        <div class="list-item" onclick="openModal(${i.id})">
-            <img src="${i.uri}" class="list-thumb">
-            <div class="list-content">
-                <div class="list-title">${i.title || 'Untitled'}</div>
-                <div class="list-sub"><span class="list-tag" style="background:${i.type?.color || '#666'}20;color:${i.type?.color || '#666'}">${i.type?.icon} ${i.type?.label}</span><span>${timeAgo(i.time)}</span></div>
-            </div>
-            ${i.amountConverted ? `<span class="list-amount">${formatCurrency(i.amountConverted, settings.baseCurrency)}</span>` : ''}
-        </div>
-    `).join('') || '<div class="empty"><div class="empty-title">No items</div></div>';
+    document.getElementById('home-recent').innerHTML=items.slice(0,5).map(i=>`<div class="list-item" onclick="openModal(${i.id})"><img src="${i.uri}" class="list-thumb"><div class="list-content"><div class="list-title">${i.title||'Untitled'}</div><div class="list-sub"><span class="list-tag" style="background:${i.type?.color||'#666'}20;color:${i.type?.color||'#666'}">${i.type?.icon} ${i.type?.label}</span>${i.isDuplicate?'<span class="list-dupe">DUPE</span>':''}<span>${timeAgo(i.time)}</span></div>${i.tags?.length?`<div class="tags">${i.tags.slice(0,3).map(t=>`<span class="auto-tag">${t}</span>`).join('')}</div>`:''}</div>${i.amountConverted?`<span class="list-amount">${formatCurrency(i.amountConverted,settings.baseCurrency)}</span>`:''}</div>`).join('')||'<div class="empty"><div class="empty-title">No items</div></div>';
     
-    const typeCounts = {};
-    items.forEach(i => typeCounts[i.typeId] = (typeCounts[i.typeId] || 0) + 1);
-    document.getElementById('filters').innerHTML = `<div class="filter ${activeFilter === 'all' ? 'active' : ''}" onclick="activeFilter='all';render()">All ${items.length}</div>${Object.entries(typeCounts).map(([id, n]) => `<div class="filter ${activeFilter === id ? 'active' : ''}" onclick="activeFilter='${id}';render()">${TYPES[id]?.icon || '📱'} ${n}</div>`).join('')}`;
+    const typeCounts={};items.forEach(i=>typeCounts[i.typeId]=(typeCounts[i.typeId]||0)+1);
+    document.getElementById('filters').innerHTML=`<div class="filter ${activeFilter==='all'?'active':''}" onclick="activeFilter='all';render()">All ${items.length}</div>${Object.entries(typeCounts).map(([id,n])=>`<div class="filter ${activeFilter===id?'active':''}" onclick="activeFilter='${id}';render()">${TYPES[id]?.icon||'📱'} ${n}</div>`).join('')}`;
     
-    const q = document.getElementById('search').value.toLowerCase();
-    let filtered = items;
-    if (q) filtered = items.filter(i => (i.title || '').toLowerCase().includes(q));
-    if (activeFilter !== 'all') filtered = filtered.filter(i => i.typeId === activeFilter);
+    const q=document.getElementById('search').value.toLowerCase();
+    let filtered=items;
+    if(q)filtered=items.filter(i=>(i.title||'').toLowerCase().includes(q)||(i.tags||[]).some(t=>t.includes(q)));
+    if(activeFilter!=='all')filtered=filtered.filter(i=>i.typeId===activeFilter);
     
-    document.getElementById('browse-content').innerHTML = filtered.length ? `<div class="grid">${filtered.map(i => `
-        <div class="grid-item" onclick="openModal(${i.id})"><img src="${i.uri}"><div class="grid-overlay"><div class="grid-type" style="color:${i.type?.color || '#666'}">${i.type?.icon} ${i.type?.label}</div><div class="grid-title">${i.title || 'Untitled'}</div><div class="grid-meta">${i.amountConverted ? `<span class="grid-amount">${formatCurrency(i.amountConverted, settings.baseCurrency)}</span>` : '<span></span>'}<span class="grid-time">${timeAgo(i.time)}</span></div></div></div>
-    `).join('')}</div>` : '<div class="empty"><div class="empty-title">No items</div></div>';
+    document.getElementById('browse-content').innerHTML=filtered.length?`<div class="grid">${filtered.map(i=>`<div class="grid-item" onclick="openModal(${i.id})"><img src="${i.uri}">${i.isDuplicate?'<div class="grid-dupe">DUPE</div>':''}<div class="grid-overlay"><div class="grid-type" style="color:${i.type?.color||'#666'}">${i.type?.icon} ${i.type?.label}</div><div class="grid-title">${i.title||'Untitled'}</div><div class="grid-meta">${i.amountConverted?`<span class="grid-amount">${formatCurrency(i.amountConverted,settings.baseCurrency)}</span>`:'<span></span>'}<span class="grid-time">${timeAgo(i.time)}</span></div></div></div>`).join('')}</div>`:'<div class="empty"><div class="empty-title">No items</div></div>';
     
     renderPlaces();
-    
-    const size = new Blob([JSON.stringify(items)]).size;
-    document.getElementById('storage-used').textContent = `${(size / 1024 / 1024).toFixed(2)} MB`;
+    const size=new Blob([JSON.stringify(items)]).size;
+    document.getElementById('storage-used').textContent=`${(size/1024/1024).toFixed(2)} MB`;
 }
 
-loadSettings();
-render();
+loadSettings();render();
 </script>
 </body>
 </html>
