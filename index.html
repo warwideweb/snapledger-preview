@@ -605,7 +605,7 @@ function pickFiles(){document.getElementById('file-input').click();}
 function toast(msg){const t=document.getElementById('toast');t.textContent='✓ '+msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 function switchTab(tab){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));document.querySelector(`.tab[data-tab="${tab}"]`)?.classList.add('active');document.getElementById(tab)?.classList.remove('hidden');if(tab==='places')setTimeout(initMap,100);}
 function timeAgo(d){const m=Math.floor((Date.now()-d)/60000);if(m<1)return'now';if(m<60)return m+'m';if(m<1440)return Math.floor(m/60)+'h';return Math.floor(m/1440)+'d';}
-function toggleAnalytics(){document.getElementById('analytics').classList.toggle('expanded');}
+function toggleAnalytics(){const el=document.getElementById('analytics');el.classList.toggle('expanded');el.querySelector('.analytics-toggle').innerHTML=el.classList.contains('expanded')?'Collapse <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>':'Expand <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>';}
 function setPeriod(p,el){currentPeriod=p;document.querySelectorAll('.period-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderAnalytics();}
 
 function initMap(){
