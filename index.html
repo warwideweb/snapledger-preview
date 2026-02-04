@@ -86,6 +86,8 @@
         .grid-title{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .grid-meta{display:flex;justify-content:space-between;align-items:center;margin-top:2px}
         .grid-amount{font-size:12px;font-weight:600;color:var(--green)}
+        .grid-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+        .grid-tag{background:rgba(59,130,246,0.3);padding:2px 6px;border-radius:4px;font-size:9px;color:#93c5fd}
         .grid-time{font-size:10px;color:rgba(255,255,255,0.5)}
         .grid-dupe{position:absolute;top:8px;left:8px;background:var(--orange);padding:4px 8px;border-radius:6px;font-size:10px;font-weight:600}
         .map-container{height:280px;background:var(--card);border:1px solid var(--border);border-radius:16px;margin:0 16px 16px;overflow:hidden}
@@ -380,13 +382,40 @@ function findDuplicate(hash){return settings.duplicateDetection?items.find(i=>i.
 function convertCurrency(amount,from){const rate=parseFloat(settings.exchangeRate)||35.5;if(from==='THB'&&settings.baseCurrency==='USD')return amount/rate;if(from==='USD'&&settings.baseCurrency==='THB')return amount*rate;return amount;}
 function formatCurrency(amount,currency){const symbols={USD:'$',THB:'฿',EUR:'€'};return(symbols[currency]||'')+amount.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
 
+// Smart Tags for better AI suggestions
+const SMART_TAGS={
+    receipt:['expense','tax-deductible','reimbursable','personal','business'],
+    bill:['utility','monthly','overdue','autopay','subscription'],
+    product:['wishlist','compare','buy-later','gift-idea','sale'],
+    food:['favorite','try-again','delivery','dine-in','cheap-eats'],
+    cafe:['workspace','meeting-spot','wifi','quiet','aesthetic'],
+    place:['must-visit','been-here','bookmark','recommend','hidden-gem'],
+    travel:['bucket-list','booked','research','deal','adventure'],
+    transfer:['income','expense','split','refund','recurring'],
+    idea:['urgent','someday','project','side-hustle','content'],
+    screenshot:['reference','save','share','temp','important']
+};
+
+function generateSmartTags(typeId,amount){
+    const tags=SMART_TAGS[typeId]||['misc'];
+    const result=[];
+    result.push(tags[Math.floor(Math.random()*tags.length)]);
+    if(Math.random()>0.4)result.push(tags[Math.floor(Math.random()*tags.length)]);
+    if(amount&&amount>500)result.push('high-value');
+    if(amount&&amount<100)result.push('small');
+    const hour=new Date().getHours();
+    if(hour>=22||hour<6)result.push('late-night');
+    return[...new Set(result)].slice(0,3);
+}
+
 function mockClassify(){
     const types=Object.keys(TYPES);
     const typeId=types[Math.floor(Math.random()*types.length)];
     const titles={receipt:['Grab Food','Starbucks','7-Eleven'],bill:['Electric','Internet','Phone'],product:['Nike Shoes','AirPods','Watch'],food:['Sushi Place','Thai Food'],cafe:['Roots Coffee'],place:['Chatuchak'],travel:['Beach Resort'],idea:['App idea'],screenshot:['Screenshot']};
     const hasAmount=['receipt','bill','product','transfer'].includes(typeId);
     const isPlace=PLACE_TYPES.includes(typeId);
-    return{type:typeId,title:titles[typeId]?.[Math.floor(Math.random()*titles[typeId].length)]||'Item',amount:hasAmount?Math.floor(Math.random()*2000)+50:null,currency:'THB',location:isPlace?{name:titles[typeId]?.[0]||'Place',lat:MOCK_COORDS[typeId]?.[0]||13.7563,lng:MOCK_COORDS[typeId]?.[1]||100.5018}:null,category:'other'};
+    const amount=hasAmount?Math.floor(Math.random()*2000)+50:null;
+    return{type:typeId,title:titles[typeId]?.[Math.floor(Math.random()*titles[typeId].length)]||'Item',amount,currency:'THB',location:isPlace?{name:titles[typeId]?.[0]||'Place',lat:MOCK_COORDS[typeId]?.[0]||13.7563,lng:MOCK_COORDS[typeId]?.[1]||100.5018}:null,category:'other',smartTags:generateSmartTags(typeId,amount)};
 }
 
 async function processImage(dataUrl){
@@ -395,7 +424,7 @@ async function processImage(dataUrl){
     const dupe=findDuplicate(hash);
     const c=mockClassify();
     const type=TYPES[c.type]||TYPES.screenshot;
-    return{id:Date.now()+Math.random(),uri:dataUrl,hash,time:Date.now(),typeId:c.type,type,title:c.title,amountOriginal:c.amount,currencyOriginal:c.currency||'THB',amountConverted:c.amount?convertCurrency(c.amount,c.currency||'THB'):null,location:c.location,category:c.category||'other',isDuplicate:!!dupe};
+    return{id:Date.now()+Math.random(),uri:dataUrl,hash,time:Date.now(),typeId:c.type,type,title:c.title,amountOriginal:c.amount,currencyOriginal:c.currency||'THB',amountConverted:c.amount?convertCurrency(c.amount,c.currency||'THB'):null,location:c.location,category:c.category||'other',isDuplicate:!!dupe,smartTags:c.smartTags||[]};
 }
 
 function showProgress(current,total){
@@ -608,7 +637,7 @@ function render(){
     document.getElementById('stat-ideas').textContent=items.filter(i=>i.typeId==='idea').length;
     renderAnalytics();
     
-    document.getElementById('home-recent').innerHTML=items.slice(0,5).map(i=>`<div class="list-item" onclick="openModal(${i.id})"><img src="${i.uri}" class="list-thumb"><div class="list-content"><div class="list-title">${i.title||'Untitled'}</div><div class="list-sub"><span class="list-tag" style="background:${i.type?.color||'#666'}20;color:${i.type?.color||'#666'}">${i.type?.icon} ${i.type?.label}</span>${i.isDuplicate?'<span class="list-dupe">DUPE</span>':''}<span>${timeAgo(i.time)}</span></div></div>${i.amountConverted?`<span class="list-amount">${formatCurrency(i.amountConverted,settings.baseCurrency)}</span>`:''}</div>`).join('')||'<div class="empty"><div class="empty-title">No items</div></div>';
+    document.getElementById('home-recent').innerHTML=items.slice(0,5).map(i=>`<div class="list-item" onclick="openModal(${i.id})"><img src="${i.uri}" class="list-thumb"><div class="list-content"><div class="list-title">${i.title||'Untitled'}</div><div class="list-sub"><span class="list-tag" style="background:${i.type?.color||'#666'}20;color:${i.type?.color||'#666'}">${i.type?.icon} ${i.type?.label}</span>${i.smartTags?.slice(0,2).map(t=>`<span class="list-tag" style="background:#3b82f620;color:#3b82f6">${t}</span>`).join('')||''}${i.isDuplicate?'<span class="list-dupe">DUPE</span>':''}<span>${timeAgo(i.time)}</span></div></div>${i.amountConverted?`<span class="list-amount">${formatCurrency(i.amountConverted,settings.baseCurrency)}</span>`:''}</div>`).join('')||'<div class="empty"><div class="empty-title">No items</div></div>';
     
     const typeCounts={};items.forEach(i=>typeCounts[i.typeId]=(typeCounts[i.typeId]||0)+1);
     document.getElementById('filters').innerHTML=`<div class="filter ${activeFilter==='all'?'active':''}" onclick="activeFilter='all';render()">All ${items.length}</div>${Object.entries(typeCounts).map(([id,n])=>`<div class="filter ${activeFilter===id?'active':''}" onclick="activeFilter='${id}';render()">${TYPES[id]?.icon||'📱'} ${n}</div>`).join('')}`;
@@ -618,7 +647,7 @@ function render(){
     if(q)filtered=items.filter(i=>(i.title||'').toLowerCase().includes(q));
     if(activeFilter!=='all')filtered=filtered.filter(i=>i.typeId===activeFilter);
     
-    document.getElementById('browse-content').innerHTML=filtered.length?`<div class="grid">${filtered.map(i=>`<div class="grid-item" onclick="openModal(${i.id})"><img src="${i.uri}">${i.isDuplicate?'<div class="grid-dupe">DUPE</div>':''}<div class="grid-overlay"><div class="grid-type" style="color:${i.type?.color||'#666'}">${i.type?.icon} ${i.type?.label}</div><div class="grid-title">${i.title||'Untitled'}</div><div class="grid-meta">${i.amountConverted?`<span class="grid-amount">${formatCurrency(i.amountConverted,settings.baseCurrency)}</span>`:'<span></span>'}<span class="grid-time">${timeAgo(i.time)}</span></div></div></div>`).join('')}</div>`:'<div class="empty"><div class="empty-title">No items</div></div>';
+    document.getElementById('browse-content').innerHTML=filtered.length?`<div class="grid">${filtered.map(i=>`<div class="grid-item" onclick="openModal(${i.id})"><img src="${i.uri}">${i.isDuplicate?'<div class="grid-dupe">DUPE</div>':''}<div class="grid-overlay"><div class="grid-type" style="color:${i.type?.color||'#666'}">${i.type?.icon} ${i.type?.label}</div><div class="grid-title">${i.title||'Untitled'}</div>${i.smartTags?.length?`<div class="grid-tags">${i.smartTags.map(t=>`<span class="grid-tag">${t}</span>`).join('')}</div>`:''}<div class="grid-meta">${i.amountConverted?`<span class="grid-amount">${formatCurrency(i.amountConverted,settings.baseCurrency)}</span>`:'<span></span>'}<span class="grid-time">${timeAgo(i.time)}</span></div></div></div>`).join('')}</div>`:'<div class="empty"><div class="empty-title">No items</div></div>';
     
     renderPlaces();
     const size=new Blob([JSON.stringify(items)]).size;
