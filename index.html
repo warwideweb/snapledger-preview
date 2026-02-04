@@ -68,40 +68,40 @@
         .big-stat-value { font-size: 48px; font-weight: 700; letter-spacing: -2px; }
         .big-stat-sub { font-size: 14px; color: var(--text2); margin-top: 4px; }
         
-        .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 16px 20px; }
-        .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px; text-align: center; cursor: pointer; }
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 0 16px 20px; }
+        .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 10px; text-align: center; cursor: pointer; }
         .stat-card:active { background: var(--card2); }
-        .stat-icon { font-size: 24px; margin-bottom: 8px; }
-        .stat-num { font-size: 20px; font-weight: 700; }
-        .stat-label { font-size: 11px; color: var(--text2); text-transform: uppercase; margin-top: 4px; }
+        .stat-icon { font-size: 20px; margin-bottom: 6px; }
+        .stat-num { font-size: 18px; font-weight: 700; }
+        .stat-label { font-size: 10px; color: var(--text2); text-transform: uppercase; margin-top: 2px; }
         
-        .chart-container { padding: 0 16px 20px; }
-        .chart-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
-        .chart-title { font-size: 13px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
-        .pie-wrapper { display: flex; align-items: center; gap: 24px; }
-        .pie-chart { width: 100px; height: 100px; border-radius: 50%; position: relative; flex-shrink: 0; }
-        .pie-center { position: absolute; inset: 18px; background: var(--card); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-direction: column; }
-        .pie-center-num { font-size: 18px; font-weight: 700; }
-        .pie-center-label { font-size: 9px; color: var(--text2); }
-        .pie-legend { flex: 1; display: flex; flex-direction: column; gap: 6px; }
-        .legend-item { display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 8px; cursor: pointer; }
-        .legend-item:active { background: var(--card2); }
-        .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
-        .legend-name { flex: 1; font-size: 12px; }
-        .legend-value { font-size: 12px; font-weight: 600; }
+        /* Analytics Section */
+        .analytics { background: var(--card); border: 1px solid var(--border); border-radius: 16px; margin: 0 16px 20px; overflow: hidden; }
+        .analytics-header { padding: 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); cursor: pointer; }
+        .analytics-title { font-size: 15px; font-weight: 600; }
+        .analytics-toggle { color: var(--text2); font-size: 13px; display: flex; align-items: center; gap: 6px; }
+        .analytics-toggle svg { width: 16px; height: 16px; transition: transform 0.2s; }
+        .analytics.expanded .analytics-toggle svg { transform: rotate(180deg); }
+        .analytics-body { display: none; }
+        .analytics.expanded .analytics-body { display: block; }
         
-        .breakdown { background: var(--card); border: 1px solid var(--border); border-radius: 16px; margin: 0 16px 20px; overflow: hidden; }
-        .breakdown-header { padding: 16px; border-bottom: 1px solid var(--border); }
-        .breakdown-title { font-size: 13px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
-        .breakdown-item { display: flex; align-items: center; padding: 14px 16px; gap: 12px; }
-        .breakdown-item:not(:last-child) { border-bottom: 1px solid var(--border); }
-        .breakdown-icon { font-size: 20px; }
-        .breakdown-info { flex: 1; }
-        .breakdown-name { font-size: 14px; font-weight: 500; }
-        .breakdown-count { font-size: 12px; color: var(--text2); }
-        .breakdown-value { font-weight: 600; }
-        .breakdown-bar { height: 4px; background: var(--card2); border-radius: 2px; margin-top: 8px; overflow: hidden; }
-        .breakdown-fill { height: 100%; border-radius: 2px; }
+        .period-tabs { display: flex; padding: 12px 16px; gap: 8px; border-bottom: 1px solid var(--border); }
+        .period-tab { flex: 1; padding: 10px; border-radius: 10px; text-align: center; font-size: 13px; font-weight: 500; color: var(--text2); cursor: pointer; background: var(--card2); }
+        .period-tab.active { background: #fff; color: #000; }
+        
+        .analytics-total { padding: 20px 16px; text-align: center; border-bottom: 1px solid var(--border); }
+        .analytics-total-label { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+        .analytics-total-value { font-size: 32px; font-weight: 700; }
+        
+        .category-list { padding: 8px 0; }
+        .category-item { display: flex; align-items: center; padding: 12px 16px; gap: 12px; }
+        .category-icon { font-size: 20px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: var(--card2); border-radius: 10px; }
+        .category-info { flex: 1; }
+        .category-name { font-size: 14px; font-weight: 500; }
+        .category-bar { height: 4px; background: var(--card2); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+        .category-fill { height: 100%; border-radius: 2px; background: var(--green); }
+        .category-value { font-size: 14px; font-weight: 600; }
+        .category-count { font-size: 11px; color: var(--text2); }
         
         .section-header { display: flex; align-items: center; justify-content: space-between; padding: 0 20px 12px; }
         .section-title { font-size: 13px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
@@ -132,28 +132,25 @@
         .grid-item { position: relative; aspect-ratio: 1; overflow: hidden; background: var(--card); cursor: pointer; }
         .grid-item img { width: 100%; height: 100%; object-fit: cover; }
         .grid-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 60%); padding: 12px; display: flex; flex-direction: column; justify-content: flex-end; }
-        .grid-type { display: inline-flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); padding: 5px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; text-transform: uppercase; width: fit-content; margin-bottom: 6px; }
-        .grid-type svg { width: 11px; height: 11px; }
+        .grid-type { display: inline-flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); padding: 5px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; width: fit-content; margin-bottom: 6px; }
         .grid-title { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .grid-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 2px; }
         .grid-amount { font-size: 12px; font-weight: 600; color: var(--green); }
         .grid-time { font-size: 10px; color: rgba(255,255,255,0.5); }
         
-        .map-container { height: 300px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; margin: 0 16px 16px; overflow: hidden; position: relative; }
+        .map-container { height: 250px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; margin: 0 16px 16px; overflow: hidden; position: relative; }
         .map-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
-        .map-placeholder svg { width: 48px; height: 48px; color: var(--text3); margin-bottom: 12px; }
+        .map-placeholder svg { width: 40px; height: 40px; color: var(--text3); margin-bottom: 10px; }
         .map-placeholder-text { color: var(--text2); font-size: 14px; }
-        .map-count { background: var(--card2); padding: 8px 16px; border-radius: 100px; margin-top: 12px; font-size: 13px; font-weight: 500; }
+        .map-count { background: var(--card2); padding: 8px 16px; border-radius: 100px; margin-top: 10px; font-size: 13px; }
         
         .place-list { padding: 0 16px; }
         .place-item { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 14px; cursor: pointer; }
         .place-item:active { transform: scale(0.98); }
-        .place-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .place-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
         .place-content { flex: 1; }
         .place-name { font-weight: 600; font-size: 15px; }
         .place-address { font-size: 13px; color: var(--text2); margin-top: 2px; }
-        .place-arrow { color: var(--text3); }
-        .place-arrow svg { width: 20px; height: 20px; }
         
         .folder { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin: 0 16px 10px; display: flex; align-items: center; gap: 14px; cursor: pointer; }
         .folder:active { transform: scale(0.98); }
@@ -173,17 +170,13 @@
         .settings-label { font-size: 15px; }
         .settings-desc { font-size: 12px; color: var(--text2); margin-top: 2px; }
         .settings-value { font-size: 15px; color: var(--text2); cursor: pointer; }
-        .settings-input { background: var(--card2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; color: var(--text); font-size: 14px; width: 140px; text-align: right; }
+        .settings-input { background: var(--card2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; color: var(--text); font-size: 14px; width: 120px; text-align: right; }
         .settings-input:focus { outline: none; border-color: var(--blue); }
         
         .toggle { width: 52px; height: 32px; background: var(--card2); border: 1px solid var(--border); border-radius: 16px; position: relative; cursor: pointer; flex-shrink: 0; }
         .toggle.on { background: var(--green); border-color: var(--green); }
         .toggle::after { content: ''; position: absolute; width: 26px; height: 26px; background: #fff; border-radius: 50%; top: 2px; left: 2px; transition: transform 0.2s; }
         .toggle.on::after { transform: translateX(20px); }
-        
-        .api-status { display: flex; align-items: center; gap: 8px; font-size: 13px; }
-        .api-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
-        .api-dot.active { background: var(--green); }
         
         .tabs { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(30px); border-top: 1px solid var(--border); padding: 8px 20px; padding-bottom: max(8px, env(safe-area-inset-bottom)); display: flex; justify-content: center; }
         .tabs-inner { display: flex; max-width: 430px; width: 100%; justify-content: space-around; }
@@ -208,7 +201,10 @@
         .modal-img img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 12px; }
         .modal-info { background: var(--card); border-top: 1px solid var(--border); padding: 20px; padding-bottom: max(20px, env(safe-area-inset-bottom)); }
         .modal-type { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-bottom: 12px; }
-        .modal-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+        .modal-title-row { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+        .modal-title { font-size: 20px; font-weight: 700; flex: 1; }
+        .modal-edit { width: 32px; height: 32px; background: var(--card2); border: none; border-radius: 8px; color: var(--text2); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .modal-edit svg { width: 16px; height: 16px; }
         .modal-subtitle { color: var(--text2); margin-bottom: 16px; }
         .modal-actions { display: flex; gap: 10px; flex-wrap: wrap; }
         .modal-btn { flex: 1; min-width: calc(50% - 5px); background: var(--card2); border: 1px solid var(--border); border-radius: 12px; padding: 14px; color: var(--text); font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
@@ -217,13 +213,25 @@
         .modal-btn.blue { background: var(--blue); border-color: var(--blue); }
         .modal-btn.orange { background: var(--orange); border-color: var(--orange); }
         
+        /* Edit Modal */
+        .edit-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1001; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .edit-modal.show { display: flex; }
+        .edit-box { background: var(--card); border: 1px solid var(--border); border-radius: 20px; width: 100%; max-width: 360px; padding: 24px; }
+        .edit-title { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
+        .edit-field { margin-bottom: 16px; }
+        .edit-label { font-size: 13px; color: var(--text2); margin-bottom: 8px; }
+        .edit-input { width: 100%; background: var(--card2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; color: var(--text); font-size: 16px; }
+        .edit-input:focus { outline: none; border-color: var(--blue); }
+        .edit-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .edit-btn { flex: 1; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; border: none; }
+        .edit-btn.cancel { background: var(--card2); color: var(--text); }
+        .edit-btn.save { background: #fff; color: #000; }
+        
         .empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 40px; text-align: center; }
-        .empty-icon { width: 80px; height: 80px; background: var(--card2); border: 1px solid var(--border); border-radius: 24px; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
-        .empty-icon svg { width: 36px; height: 36px; color: var(--text3); }
         .empty-title { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
         .empty-text { color: var(--text2); font-size: 15px; margin-bottom: 24px; max-width: 260px; }
         
-        #file-input { display: none; }
+        #file-input, #import-input { display: none; }
     </style>
 </head>
 <body>
@@ -261,11 +269,34 @@
                 <div class="stat-card" onclick="activeFilter='receipt';switchTab('browse');render()">
                     <div class="stat-icon">🧾</div>
                     <div class="stat-num" id="stat-receipts">0</div>
-                    <div class="stat-label">Receipts</div>
+                    <div class="stat-label">Bills</div>
+                </div>
+                <div class="stat-card" onclick="activeFilter='idea';switchTab('browse');render()">
+                    <div class="stat-icon">💡</div>
+                    <div class="stat-num" id="stat-ideas">0</div>
+                    <div class="stat-label">Ideas</div>
                 </div>
             </div>
             
-            <div class="breakdown" id="spending-breakdown"></div>
+            <!-- Expandable Analytics -->
+            <div class="analytics" id="analytics">
+                <div class="analytics-header" onclick="toggleAnalytics()">
+                    <span class="analytics-title">📊 Spending Analytics</span>
+                    <span class="analytics-toggle">Expand <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></span>
+                </div>
+                <div class="analytics-body">
+                    <div class="period-tabs">
+                        <div class="period-tab active" onclick="setPeriod('week')">Week</div>
+                        <div class="period-tab" onclick="setPeriod('month')">Month</div>
+                        <div class="period-tab" onclick="setPeriod('all')">All Time</div>
+                    </div>
+                    <div class="analytics-total">
+                        <div class="analytics-total-label" id="period-label">This Week</div>
+                        <div class="analytics-total-value" id="period-total">$0.00</div>
+                    </div>
+                    <div class="category-list" id="category-breakdown"></div>
+                </div>
+            </div>
             
             <div class="section-header">
                 <span class="section-title">Recent</span>
@@ -291,7 +322,6 @@
                 <h1 class="header-title">Places</h1>
                 <p class="header-sub">Saved locations</p>
             </div>
-            
             <div class="map-container">
                 <div class="map-placeholder">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -299,39 +329,27 @@
                     <div class="map-count" id="places-count">0 locations</div>
                 </div>
             </div>
-            
             <div class="filters" style="padding-top:0">
-                <div class="filter active" onclick="filterPlaces('all')">All</div>
-                <div class="filter" onclick="filterPlaces('food')">🍜 Food</div>
-                <div class="filter" onclick="filterPlaces('cafe')">☕ Cafes</div>
-                <div class="filter" onclick="filterPlaces('shop')">🛍️ Shops</div>
-                <div class="filter" onclick="filterPlaces('travel')">✈️ Travel</div>
+                <div class="filter active" data-filter="all">All</div>
+                <div class="filter" data-filter="food">🍜 Food</div>
+                <div class="filter" data-filter="cafe">☕ Cafes</div>
+                <div class="filter" data-filter="travel">✈️ Travel</div>
             </div>
-            
             <div class="place-list" id="places-list"></div>
-        </div>
-        
-        <!-- LIBRARY -->
-        <div class="screen hidden" id="library">
-            <div class="header">
-                <h1 class="header-title">Library</h1>
-                <p class="header-sub">Organized by type</p>
-            </div>
-            <div id="folders"></div>
         </div>
         
         <!-- SETTINGS -->
         <div class="screen hidden" id="settings">
             <div class="header"><h1 class="header-title">Settings</h1></div>
             
-            <div class="section-header"><span class="section-title">AI Classification</span></div>
+            <div class="section-header"><span class="section-title">AI</span></div>
             <div class="settings-group">
                 <div class="settings-item">
                     <div class="settings-left">
-                        <div class="settings-icon" style="background: var(--purple);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg></div>
-                        <div><div class="settings-label">OpenAI API Key</div><div class="settings-desc">Only used when adding items</div></div>
+                        <div class="settings-icon" style="background: var(--purple);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg></div>
+                        <div><div class="settings-label">OpenAI API Key</div><div class="settings-desc">Only used when adding</div></div>
                     </div>
-                    <input type="password" class="settings-input" id="api-key" placeholder="sk-..." oninput="saveApiKey()" style="width:120px">
+                    <input type="password" class="settings-input" id="api-key" placeholder="sk-..." oninput="saveApiKey()" style="width:100px">
                 </div>
                 <div class="settings-item">
                     <div class="settings-left">
@@ -347,26 +365,16 @@
                 <div class="settings-item">
                     <div class="settings-left">
                         <div class="settings-icon" style="background: var(--orange);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
-                        <div><div class="settings-label">Find Similar</div><div class="settings-desc">Search for matching products</div></div>
+                        <span class="settings-label">Find Similar</span>
                     </div>
                     <div class="toggle on" id="find-similar-toggle" onclick="this.classList.toggle('on');saveSettings()"></div>
                 </div>
                 <div class="settings-item">
                     <div class="settings-left">
                         <div class="settings-icon" style="background: var(--red);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
-                        <div><div class="settings-label">Location Detection</div><div class="settings-desc">Find places from screenshots</div></div>
+                        <span class="settings-label">Location Detection</span>
                     </div>
                     <div class="toggle on" id="location-toggle" onclick="this.classList.toggle('on');saveSettings()"></div>
-                </div>
-                <div class="settings-item">
-                    <div class="settings-left">
-                        <div class="settings-icon" style="background: var(--blue);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
-                        <span class="settings-label">Calendar</span>
-                    </div>
-                    <select class="settings-input" id="calendar-type" onchange="saveSettings()" style="width:120px">
-                        <option value="native">Device</option>
-                        <option value="google">Google</option>
-                    </select>
                 </div>
             </div>
             
@@ -375,9 +383,9 @@
                 <div class="settings-item">
                     <div class="settings-left">
                         <div class="settings-icon" style="background: var(--yellow);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-                        <span class="settings-label">Base Currency</span>
+                        <span class="settings-label">Currency</span>
                     </div>
-                    <select class="settings-input" id="base-currency" onchange="saveSettings()" style="width:90px">
+                    <select class="settings-input" id="base-currency" onchange="saveSettings()" style="width:80px">
                         <option value="USD">USD</option>
                         <option value="THB">THB</option>
                         <option value="EUR">EUR</option>
@@ -386,39 +394,49 @@
                 <div class="settings-item">
                     <div class="settings-left">
                         <div class="settings-icon" style="background: var(--cyan);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></div>
-                        <span class="settings-label">THB→USD</span>
+                        <span class="settings-label">THB Rate</span>
                     </div>
-                    <input type="number" class="settings-input" id="exchange-rate" value="35.5" step="0.1" style="width:90px" oninput="saveSettings()">
+                    <input type="number" class="settings-input" id="exchange-rate" value="35.5" step="0.1" style="width:80px" oninput="saveSettings()">
                 </div>
             </div>
             
-            <div class="section-header"><span class="section-title">Storage</span></div>
+            <div class="section-header"><span class="section-title">Export</span></div>
             <div class="settings-group">
                 <div class="settings-item">
                     <div class="settings-left">
-                        <div class="settings-icon" style="background: var(--blue);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg></div>
-                        <div><div class="settings-label">Backup to Drive</div><div class="settings-desc">Export your data</div></div>
+                        <div class="settings-icon" style="background: var(--red);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg></div>
+                        <div><div class="settings-label">Export PDF</div><div class="settings-desc">Expense report</div></div>
                     </div>
-                    <span class="settings-value" onclick="exportData()">Export →</span>
+                    <span class="settings-value" onclick="exportPDF()">Export →</span>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-left">
+                        <div class="settings-icon" style="background: var(--blue);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg></div>
+                        <div><div class="settings-label">Full Backup</div><div class="settings-desc">All data + screenshots</div></div>
+                    </div>
+                    <span class="settings-value" onclick="exportFull()">Export →</span>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-left">
+                        <div class="settings-icon" style="background: var(--green);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg></div>
+                        <div><div class="settings-label">Import Backup</div><div class="settings-desc">Restore from file</div></div>
+                    </div>
+                    <span class="settings-value" onclick="importBackup()">Import →</span>
+                </div>
+            </div>
+            
+            <div class="section-header"><span class="section-title">Data</span></div>
+            <div class="settings-group">
+                <div class="settings-item">
+                    <span class="settings-label">Storage Used</span>
+                    <span class="settings-value" id="storage-used">0 MB</span>
                 </div>
                 <div class="settings-item">
                     <div class="settings-left">
                         <div class="settings-icon" style="background: var(--red);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></div>
-                        <span class="settings-label">Clear Data</span>
+                        <span class="settings-label">Clear All</span>
                     </div>
                     <span class="settings-value" onclick="clearData()">Clear →</span>
-                </div>
-            </div>
-            
-            <div class="section-header"><span class="section-title">About</span></div>
-            <div class="settings-group">
-                <div class="settings-item">
-                    <span class="settings-label">Version</span>
-                    <span class="settings-value">3.0.0</span>
-                </div>
-                <div class="settings-item">
-                    <span class="settings-label">Storage</span>
-                    <span class="settings-value" id="storage-used">Local only</span>
                 </div>
             </div>
         </div>
@@ -429,12 +447,11 @@
                 <div class="tab active" data-tab="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></div>
                 <div class="tab" data-tab="browse"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span>Browse</span></div>
                 <div class="tab" data-tab="places"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Places</span></div>
-                <div class="tab" data-tab="library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><span>Library</span></div>
                 <div class="tab" data-tab="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.79 1 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Settings</span></div>
             </div>
         </div>
         
-        <!-- MODAL -->
+        <!-- DETAIL MODAL -->
         <div class="modal" id="modal">
             <div class="modal-header">
                 <button class="modal-close" onclick="closeModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
@@ -443,9 +460,45 @@
             <div class="modal-img"><img id="modal-image" src=""></div>
             <div class="modal-info">
                 <div class="modal-type" id="modal-type"></div>
-                <div class="modal-title" id="modal-title"></div>
+                <div class="modal-title-row">
+                    <div class="modal-title" id="modal-title"></div>
+                    <button class="modal-edit" onclick="openEditModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>
+                </div>
                 <div class="modal-subtitle" id="modal-subtitle"></div>
                 <div class="modal-actions" id="modal-actions"></div>
+            </div>
+        </div>
+        
+        <!-- EDIT MODAL -->
+        <div class="edit-modal" id="edit-modal">
+            <div class="edit-box">
+                <div class="edit-title">Edit Item</div>
+                <div class="edit-field">
+                    <div class="edit-label">Title</div>
+                    <input type="text" class="edit-input" id="edit-title" placeholder="Enter title...">
+                </div>
+                <div class="edit-field">
+                    <div class="edit-label">Amount</div>
+                    <input type="number" class="edit-input" id="edit-amount" placeholder="0.00">
+                </div>
+                <div class="edit-field">
+                    <div class="edit-label">Type</div>
+                    <select class="edit-input" id="edit-type" style="width:100%">
+                        <option value="receipt">🧾 Receipt</option>
+                        <option value="bill">📄 Bill</option>
+                        <option value="product">🛍️ Want</option>
+                        <option value="food">🍜 Food Spot</option>
+                        <option value="cafe">☕ Cafe</option>
+                        <option value="place">📍 Place</option>
+                        <option value="travel">✈️ Travel</option>
+                        <option value="idea">💡 Idea</option>
+                        <option value="screenshot">📱 Screenshot</option>
+                    </select>
+                </div>
+                <div class="edit-actions">
+                    <button class="edit-btn cancel" onclick="closeEditModal()">Cancel</button>
+                    <button class="edit-btn save" onclick="saveEdit()">Save</button>
+                </div>
             </div>
         </div>
         
@@ -453,11 +506,13 @@
     </div>
     
     <input type="file" id="file-input" accept="image/*" multiple>
+    <input type="file" id="import-input" accept=".json">
 
 <script>
 let items = JSON.parse(localStorage.getItem('stashd_items') || '[]');
 let activeFilter = 'all';
 let currentItemId = null;
+let currentPeriod = 'week';
 let settings = JSON.parse(localStorage.getItem('stashd_settings') || '{}');
 
 settings.exchangeRate = settings.exchangeRate || 35.5;
@@ -465,31 +520,29 @@ settings.baseCurrency = settings.baseCurrency || 'USD';
 settings.useAI = settings.useAI || false;
 settings.findSimilar = settings.findSimilar !== false;
 settings.locationDetection = settings.locationDetection !== false;
-settings.calendarType = settings.calendarType || 'native';
 
 const TYPES = {
     receipt: { icon: '🧾', label: 'Receipt', color: '#22c55e' },
     bill: { icon: '📄', label: 'Bill', color: '#ef4444' },
     product: { icon: '🛍️', label: 'Want', color: '#f97316' },
-    food: { icon: '🍜', label: 'Food Spot', color: '#ec4899' },
+    food: { icon: '🍜', label: 'Food', color: '#ec4899' },
     cafe: { icon: '☕', label: 'Cafe', color: '#8b5cf6' },
     place: { icon: '📍', label: 'Place', color: '#3b82f6' },
     travel: { icon: '✈️', label: 'Travel', color: '#06b6d4' },
     transfer: { icon: '💸', label: 'Transfer', color: '#a855f7' },
     idea: { icon: '💡', label: 'Idea', color: '#eab308' },
-    info: { icon: 'ℹ️', label: 'Info', color: '#64748b' },
     screenshot: { icon: '📱', label: 'Screenshot', color: '#6b7280' }
 };
 
 const PLACE_TYPES = ['food', 'cafe', 'place', 'travel'];
 
 const CATEGORIES = [
-    { id: 'food', name: 'Food & Dining', icon: '🍜', types: ['receipt'], keywords: ['grab', 'foodpanda', 'restaurant', 'cafe', 'starbucks', '7-eleven'] },
-    { id: 'shopping', name: 'Shopping', icon: '🛍️', types: ['receipt', 'product'], keywords: ['shopee', 'lazada', 'amazon', 'uniqlo'] },
-    { id: 'transport', name: 'Transport', icon: '🚗', types: ['receipt'], keywords: ['grab', 'bolt', 'bts', 'mrt', 'shell'] },
-    { id: 'utilities', name: 'Utilities', icon: '💡', types: ['bill'], keywords: ['electric', 'water', 'internet', 'phone'] },
-    { id: 'entertainment', name: 'Entertainment', icon: '🎬', types: ['receipt'], keywords: ['netflix', 'spotify', 'steam', 'movie'] },
-    { id: 'other', name: 'Other', icon: '📦', types: ['receipt', 'bill'], keywords: [] }
+    { id: 'food', name: 'Food & Dining', icon: '🍜', color: '#ec4899' },
+    { id: 'shopping', name: 'Shopping', icon: '🛍️', color: '#f97316' },
+    { id: 'transport', name: 'Transport', icon: '🚗', color: '#22c55e' },
+    { id: 'utilities', name: 'Utilities', icon: '💡', color: '#eab308' },
+    { id: 'entertainment', name: 'Entertainment', icon: '🎬', color: '#a855f7' },
+    { id: 'other', name: 'Other', icon: '📦', color: '#6b7280' }
 ];
 
 function convertCurrency(amount, from) {
@@ -514,11 +567,7 @@ async function classifyWithAI(img) {
             body: JSON.stringify({
                 model: 'gpt-4o-mini',
                 messages: [{ role: 'user', content: [
-                    { type: 'text', text: `Analyze this screenshot. Return JSON only:
-{"type":"receipt|bill|product|food|cafe|place|travel|transfer|idea|info|screenshot",
-"title":"short title","amount":number|null,"currency":"THB|USD"|null,
-"location":{"name":"place name","address":"address if visible","category":"food|cafe|shop|travel"}|null,
-"category":"food|shopping|transport|utilities|entertainment|other"}` },
+                    { type: 'text', text: `Analyze screenshot. Return JSON: {"type":"receipt|bill|product|food|cafe|place|travel|idea|screenshot","title":"title","amount":number|null,"currency":"THB|USD"|null,"location":{"name":"","address":""}|null,"category":"food|shopping|transport|utilities|entertainment|other"}` },
                     { type: 'image_url', image_url: { url: img } }
                 ]}],
                 max_tokens: 300
@@ -534,202 +583,173 @@ async function classifyWithAI(img) {
 function mockClassify() {
     const types = Object.keys(TYPES);
     const typeId = types[Math.floor(Math.random() * types.length)];
-    const mockTitles = {
-        receipt: ['Grab Food Order', 'Starbucks', '7-Eleven'],
-        bill: ['Electric Bill', 'AIS Internet'],
-        product: ['Nike Air Max', 'MacBook Stand'],
-        food: ['Sushi Hiro', 'Som Tam Nua', 'Ramen Danbo'],
-        cafe: ['Roots Coffee', 'Factory Coffee'],
-        place: ['Siam Paragon', 'Chatuchak Market'],
-        travel: ['Phuket Beach', 'Kyoto Temple'],
-        transfer: ['SCB Transfer'],
-        idea: ['App concept'],
-        info: ['Reference'],
-        screenshot: ['Screenshot']
-    };
+    const titles = { receipt: ['Grab Food', 'Starbucks'], bill: ['Electric', 'Internet'], product: ['Nike Shoes', 'AirPods'], food: ['Sushi Place', 'Thai Restaurant'], cafe: ['Roots Coffee'], place: ['Chatuchak'], travel: ['Beach Resort'], idea: ['App idea'], screenshot: ['Screenshot'] };
     const hasAmount = ['receipt', 'bill', 'product', 'transfer'].includes(typeId);
     const isPlace = PLACE_TYPES.includes(typeId);
-    return {
-        type: typeId,
-        title: mockTitles[typeId]?.[Math.floor(Math.random() * mockTitles[typeId].length)] || 'Item',
-        amount: hasAmount ? Math.floor(Math.random() * 2000) + 50 : null,
-        currency: 'THB',
-        location: isPlace ? { name: mockTitles[typeId]?.[0], address: 'Bangkok, Thailand', category: typeId } : null,
-        category: 'other'
-    };
+    return { type: typeId, title: titles[typeId]?.[0] || 'Item', amount: hasAmount ? Math.floor(Math.random() * 2000) + 50 : null, currency: 'THB', location: isPlace ? { name: titles[typeId]?.[0], address: 'Bangkok' } : null, category: 'other' };
 }
 
 async function processImage(dataUrl) {
     let c = settings.useAI ? await classifyWithAI(dataUrl) : null;
     if (!c) c = mockClassify();
     const type = TYPES[c.type] || TYPES.screenshot;
-    const amountConverted = c.amount ? convertCurrency(c.amount, c.currency || 'THB') : null;
-    return {
-        id: Date.now() + Math.random(),
-        uri: dataUrl,
-        time: Date.now(),
-        typeId: c.type,
-        type,
-        title: c.title,
-        amountOriginal: c.amount,
-        currencyOriginal: c.currency || 'THB',
-        amountConverted,
-        location: c.location,
-        category: c.category || 'other'
-    };
+    return { id: Date.now() + Math.random(), uri: dataUrl, time: Date.now(), typeId: c.type, type, title: c.title, amountOriginal: c.amount, currencyOriginal: c.currency || 'THB', amountConverted: c.amount ? convertCurrency(c.amount, c.currency || 'THB') : null, location: c.location, category: c.category || 'other' };
 }
 
 function pickFiles() { document.getElementById('file-input').click(); }
-function toast(msg) {
-    const t = document.getElementById('toast');
-    t.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;color:var(--green)"><path d="M20 6 9 17l-5-5"/></svg> ${msg}`;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2500);
+function toast(msg) { const t = document.getElementById('toast'); t.innerHTML = `✓ ${msg}`; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
+function switchTab(tab) { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden')); document.querySelector(`.tab[data-tab="${tab}"]`)?.classList.add('active'); document.getElementById(tab)?.classList.remove('hidden'); }
+function timeAgo(d) { const m = Math.floor((Date.now() - d) / 60000); if (m < 1) return 'now'; if (m < 60) return m + 'm'; if (m < 1440) return Math.floor(m/60) + 'h'; return Math.floor(m/1440) + 'd'; }
+
+function toggleAnalytics() { document.getElementById('analytics').classList.toggle('expanded'); }
+
+function setPeriod(p) {
+    currentPeriod = p;
+    document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    renderAnalytics();
 }
 
-function switchTab(tab) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-    document.querySelector(`.tab[data-tab="${tab}"]`)?.classList.add('active');
-    document.getElementById(tab)?.classList.remove('hidden');
-}
-
-function timeAgo(d) {
-    const m = Math.floor((Date.now() - d) / 60000);
-    if (m < 1) return 'now';
-    if (m < 60) return m + 'm';
-    if (m < 1440) return Math.floor(m/60) + 'h';
-    return Math.floor(m/1440) + 'd';
+function renderAnalytics() {
+    const now = Date.now();
+    const week = 7 * 24 * 60 * 60 * 1000;
+    const month = 30 * 24 * 60 * 60 * 1000;
+    
+    let filtered = items.filter(i => i.amountConverted);
+    if (currentPeriod === 'week') filtered = filtered.filter(i => now - i.time < week);
+    else if (currentPeriod === 'month') filtered = filtered.filter(i => now - i.time < month);
+    
+    const total = filtered.reduce((s, i) => s + i.amountConverted, 0);
+    const labels = { week: 'This Week', month: 'This Month', all: 'All Time' };
+    
+    document.getElementById('period-label').textContent = labels[currentPeriod];
+    document.getElementById('period-total').textContent = formatCurrency(total, settings.baseCurrency);
+    
+    const catTotals = {};
+    filtered.forEach(i => { catTotals[i.category || 'other'] = (catTotals[i.category || 'other'] || 0) + i.amountConverted; });
+    const maxCat = Math.max(...Object.values(catTotals), 1);
+    
+    document.getElementById('category-breakdown').innerHTML = CATEGORIES.filter(c => catTotals[c.id]).map(c => `
+        <div class="category-item">
+            <div class="category-icon">${c.icon}</div>
+            <div class="category-info">
+                <div class="category-name">${c.name}</div>
+                <div class="category-bar"><div class="category-fill" style="width:${(catTotals[c.id]/maxCat)*100}%;background:${c.color}"></div></div>
+            </div>
+            <div style="text-align:right">
+                <div class="category-value">${formatCurrency(catTotals[c.id], settings.baseCurrency)}</div>
+                <div class="category-count">${filtered.filter(i => i.category === c.id).length} items</div>
+            </div>
+        </div>
+    `).join('') || '<div style="padding:20px;text-align:center;color:var(--text2)">No data</div>';
 }
 
 function openModal(itemId) {
     const item = items.find(i => i.id === itemId);
     if (!item) return;
     currentItemId = itemId;
-    
     document.getElementById('modal-image').src = item.uri;
     document.getElementById('modal-type').innerHTML = `${item.type?.icon || '📱'} ${item.type?.label || 'Item'}`;
     document.getElementById('modal-type').style.background = (item.type?.color || '#666') + '30';
     document.getElementById('modal-type').style.color = item.type?.color || '#666';
     document.getElementById('modal-title').textContent = item.title || 'Untitled';
-    
-    let subtitle = item.location?.address || (item.amountOriginal ? formatCurrency(item.amountOriginal, item.currencyOriginal) + (item.currencyOriginal !== settings.baseCurrency ? ' → ' + formatCurrency(item.amountConverted, settings.baseCurrency) : '') : 'No value');
-    document.getElementById('modal-subtitle').textContent = subtitle;
+    document.getElementById('modal-subtitle').textContent = item.location?.address || (item.amountOriginal ? formatCurrency(item.amountOriginal, item.currencyOriginal) : 'No value');
     
     let actions = '';
-    if (item.typeId === 'product' && settings.findSimilar) {
-        actions += `<button class="modal-btn blue" onclick="findSimilar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Find Similar</button>`;
-    }
-    if (item.location && settings.locationDetection) {
-        actions += `<button class="modal-btn orange" onclick="openMaps()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Open Maps</button>`;
-    }
+    if (item.typeId === 'product' && settings.findSimilar) actions += `<button class="modal-btn blue" onclick="findSimilar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Find</button>`;
+    if (item.location && settings.locationDetection) actions += `<button class="modal-btn orange" onclick="openMaps()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/></svg>Map</button>`;
     actions += `<button class="modal-btn" onclick="openReminder()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>Remind</button>`;
     actions += `<button class="modal-btn primary" onclick="closeModal()">Done</button>`;
-    
     document.getElementById('modal-actions').innerHTML = actions;
     document.getElementById('modal').classList.add('show');
 }
 
 function closeModal() { document.getElementById('modal').classList.remove('show'); currentItemId = null; }
 
-function deleteCurrentItem() {
-    if (!currentItemId) return;
-    items = items.filter(i => i.id !== currentItemId);
-    saveItems();
-    closeModal();
-    render();
-    toast('Deleted');
-}
-
-function findSimilar() {
-    window.open('https://images.google.com/', '_blank');
-    toast('Upload screenshot to search');
-}
-
-function openMaps() {
-    const item = items.find(i => i.id === currentItemId);
-    if (!item?.location) return;
-    const q = encodeURIComponent(item.location.name + ' ' + (item.location.address || ''));
-    window.open(`https://www.google.com/maps/search/${q}`, '_blank');
-    toast('Opening Maps...');
-}
-
-function openReminder() {
+function openEditModal() {
     const item = items.find(i => i.id === currentItemId);
     if (!item) return;
-    const title = encodeURIComponent(item.title);
-    if (settings.calendarType === 'google') {
-        window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}`, '_blank');
-    } else {
-        const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:${item.title}\nEND:VEVENT\nEND:VCALENDAR`;
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
-        a.download = 'reminder.ics';
-        a.click();
-    }
-    toast('Calendar opened');
+    document.getElementById('edit-title').value = item.title || '';
+    document.getElementById('edit-amount').value = item.amountOriginal || '';
+    document.getElementById('edit-type').value = item.typeId || 'screenshot';
+    document.getElementById('edit-modal').classList.add('show');
 }
 
-function exportData() {
-    const data = JSON.stringify({ items, settings, exported: new Date().toISOString() }, null, 2);
+function closeEditModal() { document.getElementById('edit-modal').classList.remove('show'); }
+
+function saveEdit() {
+    const item = items.find(i => i.id === currentItemId);
+    if (!item) return;
+    item.title = document.getElementById('edit-title').value;
+    item.amountOriginal = parseFloat(document.getElementById('edit-amount').value) || null;
+    item.amountConverted = item.amountOriginal ? convertCurrency(item.amountOriginal, item.currencyOriginal) : null;
+    item.typeId = document.getElementById('edit-type').value;
+    item.type = TYPES[item.typeId] || TYPES.screenshot;
+    item.location = PLACE_TYPES.includes(item.typeId) ? { name: item.title, address: '' } : null;
+    saveItems();
+    closeEditModal();
+    openModal(currentItemId);
+    render();
+    toast('Saved');
+}
+
+function deleteCurrentItem() { if (!currentItemId) return; items = items.filter(i => i.id !== currentItemId); saveItems(); closeModal(); render(); toast('Deleted'); }
+function findSimilar() { window.open('https://lens.google.com/', '_blank'); toast('Open Google Lens'); }
+function openMaps() { const item = items.find(i => i.id === currentItemId); if (!item?.location) return; window.open(`https://www.google.com/maps/search/${encodeURIComponent(item.location.name)}`, '_blank'); }
+function openReminder() { const item = items.find(i => i.id === currentItemId); if (!item) return; window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(item.title)}`, '_blank'); toast('Calendar opened'); }
+
+function exportPDF() {
+    const valued = items.filter(i => i.amountConverted);
+    const total = valued.reduce((s, i) => s + i.amountConverted, 0);
+    let html = `<html><head><title>Stashd Expense Report</title><style>body{font-family:Arial;padding:40px}h1{margin-bottom:10px}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{border:1px solid #ddd;padding:12px;text-align:left}th{background:#f5f5f5}.total{font-size:24px;margin:20px 0}</style></head><body>`;
+    html += `<h1>Stashd Expense Report</h1><p>Generated: ${new Date().toLocaleDateString()}</p>`;
+    html += `<div class="total">Total: ${formatCurrency(total, settings.baseCurrency)}</div>`;
+    html += `<table><tr><th>Date</th><th>Item</th><th>Type</th><th>Amount</th></tr>`;
+    valued.forEach(i => { html += `<tr><td>${new Date(i.time).toLocaleDateString()}</td><td>${i.title}</td><td>${i.type?.label || 'Other'}</td><td>${formatCurrency(i.amountConverted, settings.baseCurrency)}</td></tr>`; });
+    html += `</table></body></html>`;
+    const w = window.open('', '_blank');
+    w.document.write(html);
+    w.document.close();
+    w.print();
+    toast('Print dialog opened');
+}
+
+function exportFull() {
+    const data = JSON.stringify({ version: '3.0', exported: new Date().toISOString(), settings, items }, null, 2);
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
-    a.download = 'stashd-backup.json';
+    a.download = `stashd-backup-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
-    toast('Exported!');
+    toast('Backup downloaded');
 }
 
-function clearData() {
-    if (confirm('Delete all data?')) {
-        items = [];
-        saveItems();
-        render();
-        toast('Cleared');
-    }
-}
+function importBackup() { document.getElementById('import-input').click(); }
 
-function saveApiKey() {
-    const key = document.getElementById('api-key').value;
-    if (key) localStorage.setItem('stashd_apikey', key);
-    else localStorage.removeItem('stashd_apikey');
-    updateApiStatus();
-}
+document.getElementById('import-input').addEventListener('change', async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        if (data.items && Array.isArray(data.items)) {
+            if (confirm(`Import ${data.items.length} items? This will add to your existing data.`)) {
+                items = [...data.items, ...items];
+                if (data.settings) Object.assign(settings, data.settings);
+                saveItems();
+                saveSettings();
+                render();
+                toast(`Imported ${data.items.length} items`);
+            }
+        }
+    } catch (err) { toast('Invalid backup file'); }
+    e.target.value = '';
+});
 
-function toggleAI() {
-    document.getElementById('use-ai-toggle').classList.toggle('on');
-    settings.useAI = document.getElementById('use-ai-toggle').classList.contains('on');
-    saveSettings();
-}
-
-function saveSettings() {
-    settings.exchangeRate = parseFloat(document.getElementById('exchange-rate').value) || 35.5;
-    settings.baseCurrency = document.getElementById('base-currency').value;
-    settings.calendarType = document.getElementById('calendar-type').value;
-    settings.findSimilar = document.getElementById('find-similar-toggle').classList.contains('on');
-    settings.locationDetection = document.getElementById('location-toggle').classList.contains('on');
-    localStorage.setItem('stashd_settings', JSON.stringify(settings));
-    render();
-}
-
-function loadSettings() {
-    const key = localStorage.getItem('stashd_apikey');
-    if (key) document.getElementById('api-key').value = key;
-    document.getElementById('exchange-rate').value = settings.exchangeRate;
-    document.getElementById('base-currency').value = settings.baseCurrency;
-    document.getElementById('calendar-type').value = settings.calendarType;
-    if (settings.useAI) document.getElementById('use-ai-toggle').classList.add('on');
-    if (!settings.findSimilar) document.getElementById('find-similar-toggle').classList.remove('on');
-    if (!settings.locationDetection) document.getElementById('location-toggle').classList.remove('on');
-    updateApiStatus();
-}
-
-function updateApiStatus() {
-    const key = localStorage.getItem('stashd_apikey');
-    document.getElementById('api-dot')?.classList.toggle('active', key && key.startsWith('sk-'));
-    const text = document.getElementById('api-status-text');
-    if (text) text.textContent = key && key.startsWith('sk-') ? 'Connected' : 'Not set';
-}
-
+function clearData() { if (confirm('Delete all data?')) { items = []; saveItems(); render(); toast('Cleared'); } }
+function saveApiKey() { const key = document.getElementById('api-key').value; if (key) localStorage.setItem('stashd_apikey', key); else localStorage.removeItem('stashd_apikey'); }
+function toggleAI() { document.getElementById('use-ai-toggle').classList.toggle('on'); settings.useAI = document.getElementById('use-ai-toggle').classList.contains('on'); saveSettings(); }
+function saveSettings() { settings.exchangeRate = parseFloat(document.getElementById('exchange-rate').value) || 35.5; settings.baseCurrency = document.getElementById('base-currency').value; settings.findSimilar = document.getElementById('find-similar-toggle').classList.contains('on'); settings.locationDetection = document.getElementById('location-toggle').classList.contains('on'); localStorage.setItem('stashd_settings', JSON.stringify(settings)); render(); }
+function loadSettings() { const key = localStorage.getItem('stashd_apikey'); if (key) document.getElementById('api-key').value = key; document.getElementById('exchange-rate').value = settings.exchangeRate; document.getElementById('base-currency').value = settings.baseCurrency; if (settings.useAI) document.getElementById('use-ai-toggle').classList.add('on'); if (!settings.findSimilar) document.getElementById('find-similar-toggle').classList.remove('on'); if (!settings.locationDetection) document.getElementById('location-toggle').classList.remove('on'); }
 function saveItems() { localStorage.setItem('stashd_items', JSON.stringify(items)); }
 
 document.getElementById('file-input').addEventListener('change', async e => {
@@ -748,16 +768,17 @@ document.getElementById('file-input').addEventListener('change', async e => {
 
 document.querySelectorAll('.tab').forEach(t => { t.onclick = () => switchTab(t.dataset.tab); });
 
-function filterPlaces(type) {
-    document.querySelectorAll('#places .filter').forEach(f => f.classList.remove('active'));
-    event.target.classList.add('active');
-    renderPlaces(type);
-}
+document.querySelectorAll('#places .filter').forEach(f => {
+    f.onclick = () => {
+        document.querySelectorAll('#places .filter').forEach(x => x.classList.remove('active'));
+        f.classList.add('active');
+        renderPlaces(f.dataset.filter);
+    };
+});
 
 function renderPlaces(filter = 'all') {
     const places = items.filter(i => i.location);
-    const filtered = filter === 'all' ? places : places.filter(i => i.location?.category === filter || i.typeId === filter);
-    
+    const filtered = filter === 'all' ? places : places.filter(i => i.typeId === filter);
     document.getElementById('places-count').textContent = `${places.length} location${places.length !== 1 ? 's' : ''}`;
     document.getElementById('places-list').innerHTML = filtered.length ? filtered.map(i => `
         <div class="place-item" onclick="openModal(${i.id})">
@@ -766,114 +787,52 @@ function renderPlaces(filter = 'all') {
                 <div class="place-name">${i.location?.name || i.title}</div>
                 <div class="place-address">${i.location?.address || 'Tap to view'}</div>
             </div>
-            <div class="place-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></div>
         </div>
-    `).join('') : '<div class="empty"><div class="empty-title">No places yet</div><div class="empty-text">Save screenshots of restaurants, cafes, or travel spots</div></div>';
+    `).join('') : '<div class="empty"><div class="empty-title">No places</div><div class="empty-text">Save restaurant or travel screenshots</div></div>';
 }
 
 function render() {
     const valued = items.filter(i => i.amountConverted);
     const total = valued.reduce((s, i) => s + i.amountConverted, 0);
     const places = items.filter(i => i.location);
-    const wants = items.filter(i => i.typeId === 'product');
-    const receipts = items.filter(i => ['receipt', 'bill'].includes(i.typeId));
     
     document.getElementById('home-total').textContent = formatCurrency(total, settings.baseCurrency);
     document.getElementById('home-count').textContent = `${items.length} item${items.length !== 1 ? 's' : ''}`;
-    document.getElementById('stat-wants').textContent = wants.length;
+    document.getElementById('stat-wants').textContent = items.filter(i => i.typeId === 'product').length;
     document.getElementById('stat-places').textContent = places.length;
-    document.getElementById('stat-receipts').textContent = receipts.length;
+    document.getElementById('stat-receipts').textContent = items.filter(i => ['receipt', 'bill'].includes(i.typeId)).length;
+    document.getElementById('stat-ideas').textContent = items.filter(i => i.typeId === 'idea').length;
     
-    // Spending breakdown by category
-    const catTotals = {};
-    valued.forEach(i => {
-        const cat = CATEGORIES.find(c => c.id === i.category) || CATEGORIES[5];
-        catTotals[cat.id] = (catTotals[cat.id] || 0) + i.amountConverted;
-    });
-    const maxCat = Math.max(...Object.values(catTotals), 1);
+    renderAnalytics();
     
-    document.getElementById('spending-breakdown').innerHTML = `
-        <div class="breakdown-header"><span class="breakdown-title">Spending by Category</span></div>
-        ${CATEGORIES.filter(c => catTotals[c.id]).map(c => `
-            <div class="breakdown-item">
-                <span class="breakdown-icon">${c.icon}</span>
-                <div class="breakdown-info">
-                    <div class="breakdown-name">${c.name}</div>
-                    <div class="breakdown-bar"><div class="breakdown-fill" style="width:${(catTotals[c.id]/maxCat)*100}%;background:var(--green)"></div></div>
-                </div>
-                <span class="breakdown-value">${formatCurrency(catTotals[c.id], settings.baseCurrency)}</span>
-            </div>
-        `).join('') || '<div style="padding:20px;text-align:center;color:var(--text2)">No spending data</div>'}
-    `;
-    
-    // Recent
     document.getElementById('home-recent').innerHTML = items.slice(0, 5).map(i => `
         <div class="list-item" onclick="openModal(${i.id})">
             <img src="${i.uri}" class="list-thumb">
             <div class="list-content">
                 <div class="list-title">${i.title || 'Untitled'}</div>
-                <div class="list-sub">
-                    <span class="list-tag" style="background:${i.type?.color || '#666'}20;color:${i.type?.color || '#666'}">${i.type?.icon} ${i.type?.label}</span>
-                    <span>${timeAgo(i.time)}</span>
-                </div>
+                <div class="list-sub"><span class="list-tag" style="background:${i.type?.color || '#666'}20;color:${i.type?.color || '#666'}">${i.type?.icon} ${i.type?.label}</span><span>${timeAgo(i.time)}</span></div>
             </div>
             ${i.amountConverted ? `<span class="list-amount">${formatCurrency(i.amountConverted, settings.baseCurrency)}</span>` : ''}
         </div>
-    `).join('') || '<div class="empty"><div class="empty-title">No items yet</div><div class="empty-text">Tap Add to get started</div></div>';
+    `).join('') || '<div class="empty"><div class="empty-title">No items</div></div>';
     
-    // Browse filters
     const typeCounts = {};
     items.forEach(i => typeCounts[i.typeId] = (typeCounts[i.typeId] || 0) + 1);
-    document.getElementById('filters').innerHTML = `
-        <div class="filter ${activeFilter === 'all' ? 'active' : ''}" onclick="activeFilter='all';render()">All ${items.length}</div>
-        ${Object.entries(typeCounts).map(([id, n]) => `<div class="filter ${activeFilter === id ? 'active' : ''}" onclick="activeFilter='${id}';render()">${TYPES[id]?.icon || '📱'} ${n}</div>`).join('')}
-    `;
+    document.getElementById('filters').innerHTML = `<div class="filter ${activeFilter === 'all' ? 'active' : ''}" onclick="activeFilter='all';render()">All ${items.length}</div>${Object.entries(typeCounts).map(([id, n]) => `<div class="filter ${activeFilter === id ? 'active' : ''}" onclick="activeFilter='${id}';render()">${TYPES[id]?.icon || '📱'} ${n}</div>`).join('')}`;
     
-    // Browse grid
     const q = document.getElementById('search').value.toLowerCase();
     let filtered = items;
     if (q) filtered = items.filter(i => (i.title || '').toLowerCase().includes(q));
     if (activeFilter !== 'all') filtered = filtered.filter(i => i.typeId === activeFilter);
     
     document.getElementById('browse-content').innerHTML = filtered.length ? `<div class="grid">${filtered.map(i => `
-        <div class="grid-item" onclick="openModal(${i.id})">
-            <img src="${i.uri}">
-            <div class="grid-overlay">
-                <div class="grid-type" style="color:${i.type?.color || '#666'}">${i.type?.icon} ${i.type?.label}</div>
-                <div class="grid-title">${i.title || 'Untitled'}</div>
-                <div class="grid-meta">
-                    ${i.amountConverted ? `<span class="grid-amount">${formatCurrency(i.amountConverted, settings.baseCurrency)}</span>` : '<span></span>'}
-                    <span class="grid-time">${timeAgo(i.time)}</span>
-                </div>
-            </div>
-        </div>
+        <div class="grid-item" onclick="openModal(${i.id})"><img src="${i.uri}"><div class="grid-overlay"><div class="grid-type" style="color:${i.type?.color || '#666'}">${i.type?.icon} ${i.type?.label}</div><div class="grid-title">${i.title || 'Untitled'}</div><div class="grid-meta">${i.amountConverted ? `<span class="grid-amount">${formatCurrency(i.amountConverted, settings.baseCurrency)}</span>` : '<span></span>'}<span class="grid-time">${timeAgo(i.time)}</span></div></div></div>
     `).join('')}</div>` : '<div class="empty"><div class="empty-title">No items</div></div>';
     
-    // Folders
-    const FOLDERS = [
-        { id: 'wants', name: 'Wishlist', types: ['product'], color: '#f97316' },
-        { id: 'receipts', name: 'Receipts', types: ['receipt', 'bill'], color: '#22c55e' },
-        { id: 'places', name: 'Places', types: PLACE_TYPES, color: '#3b82f6' },
-        { id: 'transfers', name: 'Transfers', types: ['transfer'], color: '#a855f7' },
-        { id: 'ideas', name: 'Ideas', types: ['idea', 'info'], color: '#eab308' },
-        { id: 'other', name: 'Other', types: ['screenshot'], color: '#6b7280' }
-    ];
-    document.getElementById('folders').innerHTML = FOLDERS.map(f => {
-        const count = items.filter(i => f.types.includes(i.typeId)).length;
-        const total = items.filter(i => f.types.includes(i.typeId) && i.amountConverted).reduce((s, i) => s + i.amountConverted, 0);
-        return `<div class="folder" onclick="activeFilter='${f.types[0]}';switchTab('browse');render()">
-            <div class="folder-icon" style="background:${f.color}20;color:${f.color}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
-            <div class="folder-content"><div class="folder-name">${f.name}</div><div class="folder-sub">${count} item${count !== 1 ? 's' : ''}${total ? ' · ' + formatCurrency(total, settings.baseCurrency) : ''}</div></div>
-            <span class="folder-badge">${count}</span>
-        </div>`;
-    }).join('');
-    
-    // Places
     renderPlaces();
     
-    // Storage
     const size = new Blob([JSON.stringify(items)]).size;
-    document.getElementById('storage-used').textContent = `${(size / 1024).toFixed(1)} KB used`;
+    document.getElementById('storage-used').textContent = `${(size / 1024 / 1024).toFixed(2)} MB`;
 }
 
 loadSettings();
