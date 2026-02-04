@@ -399,7 +399,7 @@ const MOCK_COORDS={food:[13.7563,100.5018],cafe:[13.7465,100.5392],place:[13.746
 
 if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 
-async function compressImage(dataUrl,maxWidth=800,quality=0.6){
+async function compressImage(dataUrl,maxWidth=600,quality=0.5){
     return new Promise(resolve=>{
         const img=new Image();
         img.onload=()=>{
@@ -510,7 +510,8 @@ function fallbackClassify(){
 }
 
 async function processImage(dataUrl){
-    if(settings.compress)dataUrl=await compressImage(dataUrl);
+    // Always compress to save storage space
+    dataUrl=await compressImage(dataUrl);
     const hash=imageHash(dataUrl);
     const dupe=findDuplicate(hash);
     
@@ -742,7 +743,17 @@ function saveApiKey(){const key=document.getElementById('api-key').value;if(key)
 function toggleAI(){document.getElementById('use-ai-toggle').classList.toggle('on');settings.useAI=document.getElementById('use-ai-toggle').classList.contains('on');saveSettings();}
 function saveSettings(){settings.exchangeRate=parseFloat(document.getElementById('exchange-rate').value)||35.5;settings.baseCurrency=document.getElementById('base-currency').value;settings.duplicateDetection=document.getElementById('dupe-toggle').classList.contains('on');settings.compress=document.getElementById('compress-toggle').classList.contains('on');localStorage.setItem('stashd_settings',JSON.stringify(settings));render();}
 function loadSettings(){const key=localStorage.getItem('stashd_apikey');if(key)document.getElementById('api-key').value=key;document.getElementById('exchange-rate').value=settings.exchangeRate;document.getElementById('base-currency').value=settings.baseCurrency;if(settings.useAI)document.getElementById('use-ai-toggle').classList.add('on');if(!settings.duplicateDetection)document.getElementById('dupe-toggle').classList.remove('on');if(!settings.compress)document.getElementById('compress-toggle').classList.remove('on');}
-function saveItems(){localStorage.setItem('stashd_items',JSON.stringify(items));}
+function saveItems(){
+    try{
+        localStorage.setItem('stashd_items',JSON.stringify(items));
+    }catch(e){
+        console.error('Storage full!',e);
+        toast('⚠️ Storage full! Some images may not save. Export backup recommended.');
+        // Try to save without the newest item's image data
+        const slimItems=items.map((item,i)=>i===0?{...item,uri:'data:image/png;base64,'}:item);
+        try{localStorage.setItem('stashd_items',JSON.stringify(slimItems));}catch(e2){}
+    }
+}
 
 // File upload with limit and progress
 document.getElementById('file-input').addEventListener('change',async e=>{
@@ -820,7 +831,16 @@ function render(){
     const q=document.getElementById('search').value.toLowerCase();
     let filtered=items;
     if(q)filtered=items.filter(i=>(i.title||'').toLowerCase().includes(q));
-    if(activeFilter!=='all')filtered=filtered.filter(i=>i.typeId===activeFilter);
+    // Filter groups - some filters include multiple types
+    const filterGroups={
+        'receipt':['receipt','bill','transfer'],
+        'food':['food','cafe'],
+        'place':['place','travel']
+    };
+    if(activeFilter!=='all'){
+        const types=filterGroups[activeFilter]||[activeFilter];
+        filtered=filtered.filter(i=>types.includes(i.typeId));
+    }
     
     document.getElementById('browse-content').innerHTML=filtered.length?`<div class="grid">${filtered.map(i=>`<div class="grid-item" onclick="openModal(${i.id})"><img src="${i.uri}">${i.isDuplicate?'<div class="grid-dupe">DUPE</div>':''}<div class="grid-overlay">${i.noAI?'<div class="grid-type" style="color:#666">📷 No AI</div>':`<div class="grid-type" style="color:${i.type?.color||'#666'}">${i.type?.icon} ${i.type?.label}</div>`}<div class="grid-title">${i.noAI?'Screenshot':i.title||'Untitled'}</div>${!i.noAI&&i.smartTags?.length?`<div class="grid-tags">${i.smartTags.map(t=>`<span class="grid-tag">${t}</span>`).join('')}</div>`:''}<div class="grid-meta">${!i.noAI&&i.amountConverted?`<span class="grid-amount">${formatCurrency(i.amountConverted,settings.baseCurrency)}</span>`:'<span></span>'}<span class="grid-time">${timeAgo(i.time)}</span></div></div></div>`).join('')}</div>`:'<div class="empty"><div class="empty-title">No items</div></div>';
     
