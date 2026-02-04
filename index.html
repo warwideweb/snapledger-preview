@@ -1179,14 +1179,16 @@ function renderReminders() {
             icon: '⚠️',
             title: 'Budget Alert',
             sub: `You've used ${Math.round(pct)}% of your monthly budget`,
-            action: 'View spending'
+            action: 'View spending',
+            onclick: 'switchTab("insights")'
         });
     } else if (pct >= 100) {
         reminders.push({
             icon: '🚨',
             title: 'Over Budget!',
             sub: `You're ${formatCurrency(spent - (settings.budget || 500))} over budget`,
-            action: 'Review expenses'
+            action: 'Review expenses',
+            onclick: 'goToPage(3)' // Money page
         });
     }
     
@@ -1197,12 +1199,13 @@ function renderReminders() {
             icon: '📄',
             title: `${recentBills.length} bill${recentBills.length > 1 ? 's' : ''} this month`,
             sub: 'Review your recurring expenses',
-            action: 'View bills'
+            action: 'View bills',
+            onclick: 'goToPage(3)' // Money page
         });
     }
     
     document.getElementById('reminders').innerHTML = reminders.map(r => `
-        <div class="reminder-card">
+        <div class="reminder-card" onclick="${r.onclick}">
             <div class="reminder-icon">${r.icon}</div>
             <div class="reminder-content">
                 <div class="reminder-title">${r.title}</div>
@@ -1390,17 +1393,24 @@ function editItem() {
     const item = items.find(i => i.id === currentItemId);
     if (!item) return;
     
+    // Save ID before closing modal (closeModal nulls currentItemId)
+    const editingId = currentItemId;
+    
     document.getElementById('edit-title').value = item.title || '';
     document.getElementById('edit-amount').value = item.amount || '';
     document.getElementById('edit-type').value = item.typeId || 'screenshot';
     document.getElementById('edit-preview-img').src = item.uri;
     
-    closeModal();
+    document.getElementById('item-modal').classList.remove('show');
     document.getElementById('edit-modal').classList.add('show');
+    
+    // Restore ID for saveEdit
+    currentItemId = editingId;
 }
 
 function closeEditModal() {
     document.getElementById('edit-modal').classList.remove('show');
+    currentItemId = null;
 }
 
 function saveEdit() {
