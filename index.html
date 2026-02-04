@@ -28,10 +28,11 @@
         html,body{height:100%;font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);overflow:hidden;font-size:15px;line-height:1.5}
         
         /* App Container */
-        .app{height:100%;max-width:430px;margin:0 auto;display:flex;flex-direction:column;position:relative}
-        .screen{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:100px;scroll-behavior:smooth}
-        .screen.hidden{display:none!important}
-        #browse:not(.hidden){display:flex;flex-direction:column;padding-bottom:0}
+        .app{height:100%;max-width:430px;margin:0 auto;display:flex;flex-direction:column;position:relative;overflow:hidden}
+        .screen{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:100px;scroll-behavior:smooth;position:relative;isolation:isolate}
+        .screen.hidden{display:none!important;visibility:hidden;pointer-events:none}
+        #browse:not(.hidden){display:flex;flex-direction:column;padding-bottom:0;overflow:hidden}
+        #browse #chat-messages{contain:layout style paint;overflow-y:auto;overflow-x:hidden}
         
         /* Header */
         .header{padding:20px;padding-top:max(20px,calc(env(safe-area-inset-top) + 8px));position:sticky;top:0;background:var(--bg);z-index:10}
@@ -229,12 +230,12 @@
         select{appearance:none;background:var(--card2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center;padding-right:32px}
         
         /* Chat Interface */
-        .chat-msg{display:flex;gap:8px;max-width:90%}
+        .chat-msg{display:flex;gap:8px;max-width:90%;position:relative}
         .chat-msg.user{margin-left:auto;flex-direction:row-reverse}
-        .chat-bubble{padding:14px 18px;border-radius:20px;font-size:15px;line-height:1.5}
-        .chat-bubble.ai{background:var(--card);border:1px solid var(--border);border-bottom-left-radius:6px}
+        .chat-bubble{padding:14px 18px;border-radius:20px;font-size:15px;line-height:1.5;word-wrap:break-word;overflow-wrap:break-word}
+        .chat-bubble.ai{background:var(--card);border:1px solid var(--border);border-bottom-left-radius:6px;max-width:100%}
         .chat-bubble.user{background:var(--accent);color:var(--text);border-bottom-right-radius:6px}
-        .chat-results{margin-top:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;border-radius:12px;overflow:hidden}
+        .chat-results{margin-top:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;border-radius:12px;overflow:hidden;max-width:100%}
         .chat-result-item{aspect-ratio:1;position:relative;cursor:pointer;overflow:hidden}
         .chat-result-item img{width:100%;height:100%;object-fit:cover}
         .chat-result-item.selected::after{content:'✓';position:absolute;inset:0;background:rgba(249,115,22,0.7);display:flex;align-items:center;justify-content:center;font-size:24px;color:white}
@@ -242,7 +243,7 @@
         .chat-action-btn{background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:8px 14px;font-size:13px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:6px}
         .chat-action-btn:active{transform:scale(0.96)}
         .chat-action-btn.primary{background:var(--accent);border-color:var(--accent)}
-        .typing-indicator{display:flex;gap:4px;padding:14px 18px}
+        .typing-indicator{display:flex;gap:4px;padding:0}
         .typing-dot{width:8px;height:8px;background:var(--text3);border-radius:50%;animation:typing 1.4s infinite}
         .typing-dot:nth-child(2){animation-delay:0.2s}
         .typing-dot:nth-child(3){animation-delay:0.4s}
@@ -396,7 +397,7 @@
             </div>
             
             <!-- Collections Modal -->
-            <div id="collections-modal" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:300;flex-direction:column">
+            <div id="collections-modal" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:300;flex-direction:column;isolation:isolate;contain:layout style paint">
                 <div class="header">
                     <div class="header-row">
                         <button class="btn btn-ghost btn-sm" onclick="hideCollections()">← Back</button>
@@ -1453,15 +1454,15 @@ async function sendChatMessage() {
 
 Photo data: ${JSON.stringify(itemSummary)}
 
-Respond to queries about their photos. Return JSON:
+Respond to queries about their photos. Return ONLY valid JSON (no comments, no trailing commas):
 {
   "message": "Your friendly response to the user",
-  "matchingIndexes": [0, 1, 2], // indexes of matching photos, or empty
-  "totalAmount": 123.45, // sum of amounts if relevant, or null
+  "matchingIndexes": [0, 1, 2],
+  "totalAmount": 123.45,
   "suggestion": "optional follow-up suggestion"
 }
 
-Be conversational and helpful. If calculating totals, show the math.`
+IMPORTANT: Return ONLY the JSON object, nothing else. No markdown code blocks. No explanations outside the JSON. matchingIndexes should be empty array [] if no matches. totalAmount should be null if not applicable.`
                 }, {
                     role: 'user',
                     content: query
@@ -1478,13 +1479,30 @@ Be conversational and helpful. If calculating totals, show the math.`
         const text = data.choices?.[0]?.message?.content || '';
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         
+        let result = null;
         if (jsonMatch) {
-            const result = JSON.parse(jsonMatch[0]);
+            try {
+                // Clean the JSON string before parsing
+                let cleanJson = jsonMatch[0]
+                    .replace(/\/\/[^\n]*/g, '') // Remove single-line comments
+                    .replace(/\/\*[\s\S]*?\*\//g, '') // Remove multi-line comments
+                    .replace(/,\s*([\]}])/g, '$1') // Remove trailing commas
+                    .replace(/[\x00-\x1F\x7F]/g, ' '); // Remove control characters
+                result = JSON.parse(cleanJson);
+            } catch (parseErr) {
+                console.error('JSON parse error:', parseErr, 'Raw:', jsonMatch[0]);
+                // Fallback: just show the message as plain text
+                addChatMessage(`${escapeHtml(text).replace(/\n/g, '<br>')}`);
+                return;
+            }
+        }
+        
+        if (result) {
             lastResults = (result.matchingIndexes || []).map(idx => items[idx]).filter(Boolean);
             
-            let html = `<div style="margin-bottom:12px">${escapeHtml(result.message).replace(/\n/g, '<br>')}</div>`;
+            let html = `<div style="margin-bottom:12px">${escapeHtml(result.message || '').replace(/\n/g, '<br>')}</div>`;
             
-            if (result.totalAmount) {
+            if (result.totalAmount != null && result.totalAmount > 0) {
                 html += `<div style="font-size:24px;font-weight:700;color:var(--green);margin:12px 0">${formatCurrency(result.totalAmount)}</div>`;
             }
             
@@ -1511,7 +1529,7 @@ Be conversational and helpful. If calculating totals, show the math.`
             
             addChatMessage(html);
         } else {
-            addChatMessage(escapeHtml(text));
+            addChatMessage(escapeHtml(text).replace(/\n/g, '<br>'));
         }
         
     } catch (err) {
