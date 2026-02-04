@@ -34,6 +34,21 @@
         #browse:not(.hidden){display:flex;flex-direction:column;padding-bottom:0;overflow:hidden}
         #browse #chat-messages{contain:layout style paint;overflow-y:auto;overflow-x:hidden}
         
+        /* Swipeable Pages */
+        .swipe-container{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex:1}
+        .swipe-container::-webkit-scrollbar{display:none}
+        .swipe-page{min-width:100%;scroll-snap-align:start;overflow-y:auto;padding-bottom:100px}
+        .page-dots{display:flex;justify-content:center;gap:6px;padding:12px 0 8px;position:sticky;top:0;background:var(--bg);z-index:5}
+        .page-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);transition:all 0.3s;cursor:pointer}
+        .page-dot.active{background:var(--accent);width:24px;border-radius:4px}
+        .page-header{padding:16px 20px;display:flex;align-items:center;gap:12px}
+        .page-header-icon{font-size:28px}
+        .page-header-text h2{font-size:20px;font-weight:700;margin:0}
+        .page-header-text p{font-size:12px;color:var(--text2);margin:0}
+        .page-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 30px;text-align:center}
+        .page-empty-icon{font-size:48px;margin-bottom:12px;opacity:0.6}
+        .page-empty-text{color:var(--text2);font-size:14px;line-height:1.5}
+        
         /* Header */
         .header{padding:20px;padding-top:max(20px,calc(env(safe-area-inset-top) + 8px));position:sticky;top:0;background:var(--bg);z-index:10}
         .header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
@@ -261,9 +276,10 @@
             </div>
         </div>
         
-        <!-- HOME SCREEN -->
-        <div class="screen" id="home">
-            <div class="header">
+        <!-- HOME SCREEN - SWIPEABLE PAGES -->
+        <div class="screen" id="home" style="padding-bottom:0;display:flex;flex-direction:column;overflow:hidden">
+            <!-- Fixed Header -->
+            <div class="header" style="flex-shrink:0">
                 <div class="header-row">
                     <div class="logo">
                         <div class="logo-icon" style="background:var(--accent);font-size:0">​</div>
@@ -274,70 +290,131 @@
                         Add
                     </button>
                 </div>
-                <p class="header-sub">Screenshot-first expense tracker</p>
-            </div>
-            
-            <!-- Hero Stats -->
-            <div class="hero">
-                <div class="hero-label">This Month</div>
-                <div class="hero-value" id="hero-total">$0</div>
-                <div class="hero-sub"><span id="hero-count">0</span> items tracked</div>
-                <div class="hero-trend down" id="hero-trend">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
-                    <span id="hero-trend-text">12% vs last month</span>
+                <!-- Page Dots -->
+                <div class="page-dots" id="page-dots">
+                    <div class="page-dot active" onclick="goToPage(0)" title="Overview"></div>
+                    <div class="page-dot" onclick="goToPage(1)" title="Food"></div>
+                    <div class="page-dot" onclick="goToPage(2)" title="Travel"></div>
+                    <div class="page-dot" onclick="goToPage(3)" title="Money"></div>
+                    <div class="page-dot" onclick="goToPage(4)" title="Ideas"></div>
                 </div>
             </div>
             
-            <!-- Quick Stats -->
-            <div class="quick-stats" id="quick-stats">
-                <div class="quick-stat" onclick="filterBy('receipt')">
-                    <div class="quick-stat-icon">🧾</div>
-                    <div class="quick-stat-num" id="stat-receipts">0</div>
-                    <div class="quick-stat-label">Receipts</div>
+            <!-- Swipeable Pages -->
+            <div class="swipe-container" id="swipe-container">
+                
+                <!-- PAGE 1: Overview -->
+                <div class="swipe-page" id="page-overview">
+                    <!-- Hero Stats -->
+                    <div class="hero">
+                        <div class="hero-label">This Month</div>
+                        <div class="hero-value" id="hero-total">$0</div>
+                        <div class="hero-sub"><span id="hero-count">0</span> items tracked</div>
+                        <div class="hero-trend down" id="hero-trend">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+                            <span id="hero-trend-text">12% vs last month</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Stats -->
+                    <div class="quick-stats" id="quick-stats">
+                        <div class="quick-stat" onclick="goToPage(3)">
+                            <div class="quick-stat-icon">🧾</div>
+                            <div class="quick-stat-num" id="stat-receipts">0</div>
+                            <div class="quick-stat-label">Receipts</div>
+                        </div>
+                        <div class="quick-stat" onclick="goToPage(3)">
+                            <div class="quick-stat-icon">📄</div>
+                            <div class="quick-stat-num" id="stat-bills">0</div>
+                            <div class="quick-stat-label">Bills</div>
+                        </div>
+                        <div class="quick-stat" onclick="goToPage(4)">
+                            <div class="quick-stat-icon">💡</div>
+                            <div class="quick-stat-num" id="stat-ideas">0</div>
+                            <div class="quick-stat-label">Ideas</div>
+                        </div>
+                        <div class="quick-stat" onclick="showWrapped()">
+                            <div class="quick-stat-icon">📊</div>
+                            <div class="quick-stat-num" id="stat-all">0</div>
+                            <div class="quick-stat-label">Total</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Budget Card -->
+                    <div class="budget-card" id="budget-card">
+                        <div class="budget-header">
+                            <div class="budget-title">💰 Monthly Budget</div>
+                            <button class="btn btn-ghost btn-sm" onclick="editBudget()">Edit</button>
+                        </div>
+                        <div class="budget-bar">
+                            <div class="budget-fill ok" id="budget-fill" style="width:45%"></div>
+                        </div>
+                        <div class="budget-meta">
+                            <span><span id="budget-spent">$0</span> of <span id="budget-limit">$500</span></span>
+                            <span class="budget-remaining ok" id="budget-remaining">$275 left</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Reminders -->
+                    <div class="reminders" id="reminders"></div>
+                    
+                    <!-- Recent Items -->
+                    <div class="section-header">
+                        <span class="section-title">Recent</span>
+                        <span class="section-action" onclick="switchTab('browse')">See All</span>
+                    </div>
+                    <div class="item-list" id="home-recent"></div>
                 </div>
-                <div class="quick-stat" onclick="filterBy('bill')">
-                    <div class="quick-stat-icon">📄</div>
-                    <div class="quick-stat-num" id="stat-bills">0</div>
-                    <div class="quick-stat-label">Bills</div>
+                
+                <!-- PAGE 2: Food Spots -->
+                <div class="swipe-page" id="page-food">
+                    <div class="page-header">
+                        <span class="page-header-icon">🍜</span>
+                        <div class="page-header-text">
+                            <h2>Food Spots</h2>
+                            <p>Your favorite restaurants & cafes</p>
+                        </div>
+                    </div>
+                    <div class="item-list" id="food-list"></div>
                 </div>
-                <div class="quick-stat" onclick="filterBy('product')">
-                    <div class="quick-stat-icon">🛍️</div>
-                    <div class="quick-stat-num" id="stat-wants">0</div>
-                    <div class="quick-stat-label">Wants</div>
+                
+                <!-- PAGE 3: Travel & Places -->
+                <div class="swipe-page" id="page-travel">
+                    <div class="page-header">
+                        <span class="page-header-icon">✈️</span>
+                        <div class="page-header-text">
+                            <h2>Travel & Places</h2>
+                            <p>Places to visit, trips to take</p>
+                        </div>
+                    </div>
+                    <div class="item-list" id="travel-list"></div>
                 </div>
-                <div class="quick-stat" onclick="showWrapped()">
-                    <div class="quick-stat-icon">📊</div>
-                    <div class="quick-stat-num" id="stat-all">0</div>
-                    <div class="quick-stat-label">Total</div>
+                
+                <!-- PAGE 4: Money & Bills -->
+                <div class="swipe-page" id="page-money">
+                    <div class="page-header">
+                        <span class="page-header-icon">💰</span>
+                        <div class="page-header-text">
+                            <h2>Money & Bills</h2>
+                            <p>Receipts, bills, transfers</p>
+                        </div>
+                    </div>
+                    <div class="item-list" id="money-list"></div>
                 </div>
+                
+                <!-- PAGE 5: Ideas & Wishlist -->
+                <div class="swipe-page" id="page-ideas">
+                    <div class="page-header">
+                        <span class="page-header-icon">💡</span>
+                        <div class="page-header-text">
+                            <h2>Ideas & Wishlist</h2>
+                            <p>Things you want to buy or remember</p>
+                        </div>
+                    </div>
+                    <div class="item-list" id="ideas-list"></div>
+                </div>
+                
             </div>
-            
-            <!-- Budget Card -->
-            <div class="budget-card" id="budget-card">
-                <div class="budget-header">
-                    <div class="budget-title">💰 Monthly Budget</div>
-                    <button class="btn btn-ghost btn-sm" onclick="editBudget()">Edit</button>
-                </div>
-                <div class="budget-bar">
-                    <div class="budget-fill ok" id="budget-fill" style="width:45%"></div>
-                </div>
-                <div class="budget-meta">
-                    <span><span id="budget-spent">$0</span> of <span id="budget-limit">$500</span></span>
-                    <span class="budget-remaining ok" id="budget-remaining">$275 left</span>
-                </div>
-            </div>
-            
-            <!-- Reminders -->
-            <div class="reminders" id="reminders">
-                <!-- Dynamic reminders will appear here -->
-            </div>
-            
-            <!-- Recent Items -->
-            <div class="section-header">
-                <span class="section-title">Recent</span>
-                <span class="section-action" onclick="switchTab('browse')">See All</span>
-            </div>
-            <div class="item-list" id="home-recent"></div>
         </div>
         
         <!-- BROWSE SCREEN - AI PHOTO CHAT -->
@@ -925,12 +1002,102 @@ function saveSettings() {
 
 // ============ RENDERING ============
 let insightsPeriod = 'month';
+let currentPage = 0;
 
 function render() {
     renderHome();
+    renderSwipePages();
     renderBrowse();
     renderInsights();
     renderSettings();
+}
+
+// ============ SWIPE PAGES ============
+function initSwipe() {
+    const container = document.getElementById('swipe-container');
+    if (!container) return;
+    
+    container.addEventListener('scroll', () => {
+        const pageWidth = container.offsetWidth;
+        const newPage = Math.round(container.scrollLeft / pageWidth);
+        if (newPage !== currentPage) {
+            currentPage = newPage;
+            updatePageDots();
+        }
+    }, { passive: true });
+}
+
+function goToPage(pageIndex) {
+    const container = document.getElementById('swipe-container');
+    if (!container) return;
+    
+    container.scrollTo({
+        left: pageIndex * container.offsetWidth,
+        behavior: 'smooth'
+    });
+    currentPage = pageIndex;
+    updatePageDots();
+}
+
+function updatePageDots() {
+    const dots = document.querySelectorAll('.page-dot');
+    dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentPage);
+    });
+}
+
+function renderSwipePages() {
+    // Food page
+    const foodItems = items.filter(i => ['food', 'cafe'].includes(i.typeId));
+    document.getElementById('food-list').innerHTML = renderItemList(foodItems, '🍜', 'No food spots saved yet', 'Save your favorite restaurants & cafes');
+    
+    // Travel page
+    const travelItems = items.filter(i => ['travel', 'place'].includes(i.typeId));
+    document.getElementById('travel-list').innerHTML = renderItemList(travelItems, '✈️', 'No travel plans saved', 'Save places you want to visit');
+    
+    // Money page
+    const moneyItems = items.filter(i => ['receipt', 'bill', 'transfer'].includes(i.typeId));
+    document.getElementById('money-list').innerHTML = renderItemList(moneyItems, '💰', 'No receipts or bills yet', 'Your financial screenshots will appear here');
+    
+    // Ideas/Wishlist page
+    const ideasItems = items.filter(i => ['product', 'screenshot'].includes(i.typeId));
+    document.getElementById('ideas-list').innerHTML = renderItemList(ideasItems, '💡', 'No ideas saved yet', 'Save products and things you want to remember');
+    
+    // Update stats
+    document.getElementById('stat-ideas').textContent = ideasItems.length;
+}
+
+function renderItemList(filteredItems, emptyIcon, emptyTitle, emptyText) {
+    if (!filteredItems.length) {
+        return `
+            <div class="page-empty">
+                <div class="page-empty-icon">${emptyIcon}</div>
+                <div class="empty-title">${emptyTitle}</div>
+                <div class="page-empty-text">${emptyText}</div>
+                <button class="btn btn-accent" onclick="pickFiles()" style="margin-top:16px">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                    Add Screenshot
+                </button>
+            </div>
+        `;
+    }
+    
+    return filteredItems.map(item => {
+        const type = TYPES[item.typeId] || TYPES.screenshot;
+        return `
+            <div class="list-item" onclick="openItem(${item.id})">
+                <img src="${item.uri}" class="list-thumb" onerror="this.style.display='none'">
+                <div class="list-content">
+                    <div class="list-title">${escapeHtml(item.title)}</div>
+                    <div class="list-sub">
+                        <span class="list-tag" style="background:${type.color}20;color:${type.color}">${type.icon} ${type.label}</span>
+                        <span>${timeAgo(item.time)}</span>
+                    </div>
+                </div>
+                ${item.amount ? `<div class="list-amount">${formatCurrency(item.amount)}</div>` : ''}
+            </div>
+        `;
+    }).join('');
 }
 
 function renderHome() {
@@ -947,7 +1114,6 @@ function renderHome() {
     // Quick stats
     document.getElementById('stat-receipts').textContent = items.filter(i => i.typeId === 'receipt').length;
     document.getElementById('stat-bills').textContent = items.filter(i => i.typeId === 'bill').length;
-    document.getElementById('stat-wants').textContent = items.filter(i => i.typeId === 'product').length;
     document.getElementById('stat-all').textContent = items.length;
     
     // Budget
@@ -1278,6 +1444,13 @@ function toggleSetting(key) {
     settings[key] = !settings[key];
     saveSettings();
     renderSettings();
+}
+
+function editBudget() {
+    switchTab('settings');
+    setTimeout(() => {
+        document.getElementById('budget-input')?.focus();
+    }, 100);
 }
 
 function saveBudget() {
@@ -1626,6 +1799,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // ============ INIT ============
+initSwipe();
 render();
 </script>
 </body>
