@@ -35,9 +35,9 @@
         #browse #chat-messages{contain:layout style paint;overflow-y:auto;overflow-x:hidden}
         
         /* Swipeable Pages */
-        .swipe-container{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex:1}
+        .swipe-container{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex:1;scroll-behavior:smooth}
         .swipe-container::-webkit-scrollbar{display:none}
-        .swipe-page{min-width:100%;scroll-snap-align:start;overflow-y:auto;padding-bottom:100px}
+        .swipe-page{min-width:100%;scroll-snap-align:start;scroll-snap-stop:always;overflow-y:auto;padding-bottom:100px}
         .page-dots{display:flex;justify-content:center;gap:6px;padding:12px 0 8px;position:sticky;top:0;background:var(--bg);z-index:5}
         .page-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);transition:all 0.3s;cursor:pointer}
         .page-dot.active{background:var(--accent);width:24px;border-radius:4px}
