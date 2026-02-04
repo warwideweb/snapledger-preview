@@ -131,7 +131,8 @@
         .toggle.on{background:var(--green);border-color:var(--green)}
         .toggle::after{content:'';position:absolute;width:26px;height:26px;background:#fff;border-radius:50%;top:2px;left:2px;transition:transform 0.2s}
         .toggle.on::after{transform:translateX(20px)}
-        .tabs{position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(30px);border-top:1px solid var(--border);padding:8px 20px;padding-bottom:max(8px,env(safe-area-inset-bottom));display:flex;justify-content:center}
+        .tabs{position:fixed;bottom:0;left:0;right:0;background:#000;backdrop-filter:blur(30px);border-top:1px solid var(--border);padding:8px 20px;padding-bottom:calc(8px + env(safe-area-inset-bottom));display:flex;justify-content:center}
+        body::after{content:'';position:fixed;bottom:0;left:0;right:0;height:env(safe-area-inset-bottom);background:#000;z-index:9999;pointer-events:none}
         .tabs-inner{display:flex;max-width:430px;width:100%;justify-content:space-around}
         .tab{display:flex;flex-direction:column;align-items:center;padding:8px 12px;cursor:pointer;border-radius:12px}
         .tab:active{background:rgba(255,255,255,0.05)}
