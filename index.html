@@ -507,9 +507,9 @@ Rules:
     }
 }
 
-// Basic fallback when no API key
+// Basic fallback when no API key - NO fake data
 function fallbackClassify(){
-    return{type:'screenshot',title:'Screenshot',amount:null,currency:'THB',location:null,category:'other',smartTags:['unclassified'],confidence:0};
+    return{type:'screenshot',title:'Screenshot',amount:null,currency:null,location:null,category:null,smartTags:[],confidence:0,noAI:true};
 }
 
 async function processImage(dataUrl){
@@ -528,15 +528,16 @@ async function processImage(dataUrl){
         time:Date.now(),
         typeId:c.type,
         type,
-        title:c.title,
+        title:c.noAI?'Screenshot':c.title,
         amountOriginal:c.amount,
-        currencyOriginal:c.currency||'THB',
-        amountConverted:c.amount?convertCurrency(c.amount,c.currency||'THB'):null,
+        currencyOriginal:c.currency,
+        amountConverted:c.amount&&c.currency?convertCurrency(c.amount,c.currency):null,
         location:c.location,
-        category:c.category||'other',
+        category:c.category,
         isDuplicate:!!dupe,
         smartTags:c.smartTags||[],
-        confidence:c.confidence||0
+        confidence:c.confidence||0,
+        noAI:c.noAI||false
     };
 }
 
@@ -795,7 +796,7 @@ function render(){
     document.getElementById('stat-ideas').textContent=items.filter(i=>i.typeId==='idea').length;
     renderAnalytics();
     
-    document.getElementById('home-recent').innerHTML=items.slice(0,5).map(i=>`<div class="list-item" onclick="openModal(${i.id})"><img src="${i.uri}" class="list-thumb"><div class="list-content"><div class="list-title">${i.title||'Untitled'}</div><div class="list-sub"><span class="list-tag" style="background:${i.type?.color||'#666'}20;color:${i.type?.color||'#666'}">${i.type?.icon} ${i.type?.label}</span>${i.smartTags?.slice(0,2).map(t=>`<span class="list-tag" style="background:#3b82f620;color:#3b82f6">${t}</span>`).join('')||''}${i.isDuplicate?'<span class="list-dupe">DUPE</span>':''}<span>${timeAgo(i.time)}</span></div></div>${i.amountConverted?`<span class="list-amount">${formatCurrency(i.amountConverted,settings.baseCurrency)}</span>`:''}</div>`).join('')||'<div class="empty"><div class="empty-title">No items</div></div>';
+    document.getElementById('home-recent').innerHTML=items.slice(0,5).map(i=>`<div class="list-item" onclick="openModal(${i.id})"><img src="${i.uri}" class="list-thumb"><div class="list-content"><div class="list-title">${i.noAI?'Screenshot':i.title||'Untitled'}</div><div class="list-sub">${i.noAI?`<span class="list-tag" style="background:#66666620;color:#666">📷 No AI</span>`:`<span class="list-tag" style="background:${i.type?.color||'#666'}20;color:${i.type?.color||'#666'}">${i.type?.icon} ${i.type?.label}</span>${i.smartTags?.slice(0,2).map(t=>`<span class="list-tag" style="background:#3b82f620;color:#3b82f6">${t}</span>`).join('')||''}`}${i.isDuplicate?'<span class="list-dupe">DUPE</span>':''}<span>${timeAgo(i.time)}</span></div></div>${!i.noAI&&i.amountConverted?`<span class="list-amount">${formatCurrency(i.amountConverted,settings.baseCurrency)}</span>`:''}</div>`).join('')||'<div class="empty"><div class="empty-title">No items</div></div>';
     
     const typeCounts={};items.forEach(i=>typeCounts[i.typeId]=(typeCounts[i.typeId]||0)+1);
     document.getElementById('filters').innerHTML=`<div class="filter ${activeFilter==='all'?'active':''}" onclick="activeFilter='all';render()">All ${items.length}</div>${Object.entries(typeCounts).map(([id,n])=>`<div class="filter ${activeFilter===id?'active':''}" onclick="activeFilter='${id}';render()">${TYPES[id]?.icon||'📱'} ${n}</div>`).join('')}`;
@@ -805,7 +806,7 @@ function render(){
     if(q)filtered=items.filter(i=>(i.title||'').toLowerCase().includes(q));
     if(activeFilter!=='all')filtered=filtered.filter(i=>i.typeId===activeFilter);
     
-    document.getElementById('browse-content').innerHTML=filtered.length?`<div class="grid">${filtered.map(i=>`<div class="grid-item" onclick="openModal(${i.id})"><img src="${i.uri}">${i.isDuplicate?'<div class="grid-dupe">DUPE</div>':''}<div class="grid-overlay"><div class="grid-type" style="color:${i.type?.color||'#666'}">${i.type?.icon} ${i.type?.label}</div><div class="grid-title">${i.title||'Untitled'}</div>${i.smartTags?.length?`<div class="grid-tags">${i.smartTags.map(t=>`<span class="grid-tag">${t}</span>`).join('')}</div>`:''}<div class="grid-meta">${i.amountConverted?`<span class="grid-amount">${formatCurrency(i.amountConverted,settings.baseCurrency)}</span>`:'<span></span>'}<span class="grid-time">${timeAgo(i.time)}</span></div></div></div>`).join('')}</div>`:'<div class="empty"><div class="empty-title">No items</div></div>';
+    document.getElementById('browse-content').innerHTML=filtered.length?`<div class="grid">${filtered.map(i=>`<div class="grid-item" onclick="openModal(${i.id})"><img src="${i.uri}">${i.isDuplicate?'<div class="grid-dupe">DUPE</div>':''}<div class="grid-overlay">${i.noAI?'<div class="grid-type" style="color:#666">📷 No AI</div>':`<div class="grid-type" style="color:${i.type?.color||'#666'}">${i.type?.icon} ${i.type?.label}</div>`}<div class="grid-title">${i.noAI?'Screenshot':i.title||'Untitled'}</div>${!i.noAI&&i.smartTags?.length?`<div class="grid-tags">${i.smartTags.map(t=>`<span class="grid-tag">${t}</span>`).join('')}</div>`:''}<div class="grid-meta">${!i.noAI&&i.amountConverted?`<span class="grid-amount">${formatCurrency(i.amountConverted,settings.baseCurrency)}</span>`:'<span></span>'}<span class="grid-time">${timeAgo(i.time)}</span></div></div></div>`).join('')}</div>`:'<div class="empty"><div class="empty-title">No items</div></div>';
     
     renderPlaces();
     const size=new Blob([JSON.stringify(items)]).size;
