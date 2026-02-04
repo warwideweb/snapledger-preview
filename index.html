@@ -2,18 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
     <meta name="description" content="Your smart screenshot stash">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     <title>Stashd</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+        *{margin:0;padding:0;box-sizing:border-box}
+        *:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
         :root{--bg:#000;--card:#0a0a0a;--card2:#141414;--border:#1c1c1c;--text:#fff;--text2:#666;--text3:#444;--green:#22c55e;--red:#ef4444;--blue:#3b82f6;--orange:#f97316;--purple:#a855f7;--pink:#ec4899;--yellow:#eab308;--cyan:#06b6d4}
         html,body{height:100%;font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);overflow:hidden;font-size:15px}
         .app{height:100%;max-width:430px;margin:0 auto;display:flex;flex-direction:column}
@@ -399,6 +402,36 @@ const CATEGORIES=[{id:'food',name:'Food',icon:'🍜',color:'#ec4899'},{id:'shopp
 // Mock coordinates for demo
 const MOCK_COORDS={food:[13.7563,100.5018],cafe:[13.7465,100.5392],place:[13.7469,100.5349],travel:[7.8804,98.3923]};
 
+// Security: XSS protection
+function escapeHtml(text){
+    if(!text)return'';
+    const div=document.createElement('div');
+    div.textContent=String(text);
+    return div.innerHTML;
+}
+
+// Security: Validate imported item
+function validateItem(item){
+    if(!item||typeof item!=='object')return null;
+    return{
+        id:Number(item.id)||Date.now()+Math.random(),
+        uri:item.uri?.startsWith('data:image/')?item.uri:'',
+        hash:String(item.hash||''),
+        time:Number(item.time)||Date.now(),
+        typeId:TYPES[item.typeId]?item.typeId:'screenshot',
+        title:String(item.title||'').slice(0,200),
+        amountOriginal:item.amountOriginal?Number(item.amountOriginal):null,
+        currencyOriginal:['USD','THB','EUR'].includes(item.currencyOriginal)?item.currencyOriginal:null,
+        amountConverted:item.amountConverted?Number(item.amountConverted):null,
+        location:item.location&&typeof item.location==='object'?{name:String(item.location.name||'').slice(0,100),lat:Number(item.location.lat)||null,lng:Number(item.location.lng)||null}:null,
+        category:String(item.category||'other').slice(0,20),
+        isDuplicate:Boolean(item.isDuplicate),
+        smartTags:Array.isArray(item.smartTags)?item.smartTags.map(t=>String(t).slice(0,30)).slice(0,10):[],
+        confidence:Math.min(1,Math.max(0,Number(item.confidence)||0)),
+        noAI:Boolean(item.noAI)
+    };
+}
+
 if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 
 async function compressImage(dataUrl,maxWidth=600,quality=0.5){
@@ -598,7 +631,7 @@ function renderMapPins(){
     places.forEach(i=>{
         const icon=L.divIcon({className:'',html:`<div class="custom-marker" style="background:${i.type?.color||'#f97316'}">${i.type?.icon||'📍'}</div>`,iconSize:[32,32],iconAnchor:[16,16]});
         const marker=L.marker([i.location.lat,i.location.lng],{icon}).addTo(map);
-        marker.bindPopup(`<b>${i.title||'Place'}</b><br>${i.location.name||''}`);
+        marker.bindPopup(`<b>${escapeHtml(i.title)||'Place'}</b><br>${escapeHtml(i.location.name)||''}`);
         markers.push(marker);
         bounds.push([i.location.lat,i.location.lng]);
     });
@@ -628,7 +661,7 @@ function renderAnalytics(){
     // Top merchants
     const merchants={};
     filtered.forEach(i=>{
-        const name=i.title||'Unknown';
+        const name=escapeHtml(i.title)||'Unknown';
         if(!merchants[name])merchants[name]={count:0,total:0};
         merchants[name].count++;
         merchants[name].total+=i.amountConverted;
@@ -722,7 +755,7 @@ function generatePDF(){
         ${filtered.map(i=>`<tr>
             <td>${new Date(i.time).toLocaleDateString()}</td>
             <td><span class="type-badge" style="background:${i.type?.color||'#666'}30;color:${i.type?.color||'#666'}">${i.type?.icon||'📱'} ${i.type?.label||'Item'}</span></td>
-            <td><strong>${i.title||'Untitled'}</strong></td>
+            <td><strong>${escapeHtml(i.title)||'Untitled'}</strong></td>
             <td class="amount">${formatCurrency(i.amountConverted,settings.baseCurrency)}</td>
         </tr>`).join('')}
     </table>
@@ -768,7 +801,7 @@ async function backupToDrive(){
     toast('Backup downloaded');
 }
 function importBackup(){document.getElementById('import-input').click();}
-document.getElementById('import-input').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{const data=JSON.parse(await file.text());if(data.items){if(confirm(`Import ${data.items.length} items?`)){items=[...data.items,...items];saveItems();render();toast(`Imported ${data.items.length}`);}}}catch(err){toast('Invalid file');}e.target.value='';});
+document.getElementById('import-input').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{const data=JSON.parse(await file.text());if(data.items&&Array.isArray(data.items)){const validItems=data.items.map(validateItem).filter(i=>i&&i.uri);if(validItems.length===0){toast('No valid items found');return;}if(confirm(`Import ${validItems.length} valid items?`)){items=[...validItems,...items];saveItems();render();toast(`Imported ${validItems.length}`);}}}catch(err){toast('Invalid file');}e.target.value='';});
 function clearData(){if(confirm('Delete all?')){items=[];saveItems();render();toast('Cleared');}}
 function saveApiKey(){const key=document.getElementById('api-key').value;if(key)localStorage.setItem('stashd_apikey',key);else localStorage.removeItem('stashd_apikey');}
 function toggleAI(){document.getElementById('use-ai-toggle').classList.toggle('on');settings.useAI=document.getElementById('use-ai-toggle').classList.contains('on');saveSettings();}
@@ -834,7 +867,7 @@ document.querySelectorAll('#places .filter').forEach(f=>{f.onclick=()=>{document
 function renderPlaces(filter='all'){
     const places=items.filter(i=>i.location);
     const filtered=filter==='all'?places:places.filter(i=>i.typeId===filter);
-    document.getElementById('places-list').innerHTML=filtered.length?filtered.map(i=>`<div class="place-item" onclick="openModal(${i.id})"><div class="place-icon" style="background:${i.type?.color||'#666'}30">${i.type?.icon||'📍'}</div><div class="place-content"><div class="place-name">${i.title||'Untitled'}</div><div class="place-address">${i.location?.name||'Tap to view'}</div></div></div>`).join(''):'<div class="empty"><div class="empty-title">No places</div></div>';
+    document.getElementById('places-list').innerHTML=filtered.length?filtered.map(i=>`<div class="place-item" onclick="openModal(${i.id})"><div class="place-icon" style="background:${i.type?.color||'#666'}30">${i.type?.icon||'📍'}</div><div class="place-content"><div class="place-name">${escapeHtml(i.title)||'Untitled'}</div><div class="place-address">${escapeHtml(i.location?.name)||'Tap to view'}</div></div></div>`).join(''):'<div class="empty"><div class="empty-title">No places</div></div>';
     renderMapPins();
 }
 
@@ -858,7 +891,7 @@ function render(){
     ).join('');
     renderAnalytics();
     
-    document.getElementById('home-recent').innerHTML=items.slice(0,5).map(i=>`<div class="list-item" onclick="openModal(${i.id})"><img src="${i.uri}" class="list-thumb"><div class="list-content"><div class="list-title">${i.noAI?'Screenshot':i.title||'Untitled'}</div><div class="list-sub">${i.noAI?`<span class="list-tag" style="background:#66666620;color:#666">📷 No AI</span>`:`<span class="list-tag" style="background:${i.type?.color||'#666'}20;color:${i.type?.color||'#666'}">${i.type?.icon} ${i.type?.label}</span>${i.smartTags?.slice(0,2).map(t=>`<span class="list-tag" style="background:#3b82f620;color:#3b82f6">${t}</span>`).join('')||''}`}${i.isDuplicate?'<span class="list-dupe">DUPE</span>':''}<span>${timeAgo(i.time)}</span></div></div>${!i.noAI&&i.amountConverted?`<span class="list-amount">${formatCurrency(i.amountConverted,settings.baseCurrency)}</span>`:''}</div>`).join('')||'<div class="empty"><div class="empty-title">No items</div></div>';
+    document.getElementById('home-recent').innerHTML=items.slice(0,5).map(i=>`<div class="list-item" onclick="openModal(${i.id})"><img src="${i.uri}" class="list-thumb"><div class="list-content"><div class="list-title">${i.noAI?'Screenshot':escapeHtml(i.title)||'Untitled'}</div><div class="list-sub">${i.noAI?`<span class="list-tag" style="background:#66666620;color:#666">📷 No AI</span>`:`<span class="list-tag" style="background:${i.type?.color||'#666'}20;color:${i.type?.color||'#666'}">${i.type?.icon} ${i.type?.label}</span>${i.smartTags?.slice(0,2).map(t=>`<span class="list-tag" style="background:#3b82f620;color:#3b82f6">${t}</span>`).join('')||''}`}${i.isDuplicate?'<span class="list-dupe">DUPE</span>':''}<span>${timeAgo(i.time)}</span></div></div>${!i.noAI&&i.amountConverted?`<span class="list-amount">${formatCurrency(i.amountConverted,settings.baseCurrency)}</span>`:''}</div>`).join('')||'<div class="empty"><div class="empty-title">No items</div></div>';
     
     const typeCounts={};items.forEach(i=>typeCounts[i.typeId]=(typeCounts[i.typeId]||0)+1);
     document.getElementById('filters').innerHTML=`<div class="filter ${activeFilter==='all'?'active':''}" onclick="activeFilter='all';render()">All ${items.length}</div>${Object.entries(typeCounts).map(([id,n])=>`<div class="filter ${activeFilter===id?'active':''}" onclick="activeFilter='${id}';render()">${TYPES[id]?.icon||'📱'} ${n}</div>`).join('')}`;
@@ -877,7 +910,7 @@ function render(){
         filtered=filtered.filter(i=>types.includes(i.typeId));
     }
     
-    document.getElementById('browse-content').innerHTML=filtered.length?`<div class="grid">${filtered.map(i=>`<div class="grid-item" onclick="openModal(${i.id})"><img src="${i.uri}">${i.isDuplicate?'<div class="grid-dupe">DUPE</div>':''}<div class="grid-overlay">${i.noAI?'<div class="grid-type" style="color:#666">📷 No AI</div>':`<div class="grid-type" style="color:${i.type?.color||'#666'}">${i.type?.icon} ${i.type?.label}</div>`}<div class="grid-title">${i.noAI?'Screenshot':i.title||'Untitled'}</div>${!i.noAI&&i.smartTags?.length?`<div class="grid-tags">${i.smartTags.map(t=>`<span class="grid-tag">${t}</span>`).join('')}</div>`:''}<div class="grid-meta">${!i.noAI&&i.amountConverted?`<span class="grid-amount">${formatCurrency(i.amountConverted,settings.baseCurrency)}</span>`:'<span></span>'}<span class="grid-time">${timeAgo(i.time)}</span></div></div></div>`).join('')}</div>`:'<div class="empty"><div class="empty-title">No items</div></div>';
+    document.getElementById('browse-content').innerHTML=filtered.length?`<div class="grid">${filtered.map(i=>`<div class="grid-item" onclick="openModal(${i.id})"><img src="${i.uri}">${i.isDuplicate?'<div class="grid-dupe">DUPE</div>':''}<div class="grid-overlay">${i.noAI?'<div class="grid-type" style="color:#666">📷 No AI</div>':`<div class="grid-type" style="color:${i.type?.color||'#666'}">${i.type?.icon} ${i.type?.label}</div>`}<div class="grid-title">${i.noAI?'Screenshot':escapeHtml(i.title)||'Untitled'}</div>${!i.noAI&&i.smartTags?.length?`<div class="grid-tags">${i.smartTags.map(t=>`<span class="grid-tag">${escapeHtml(t)}</span>`).join('')}</div>`:''}<div class="grid-meta">${!i.noAI&&i.amountConverted?`<span class="grid-amount">${formatCurrency(i.amountConverted,settings.baseCurrency)}</span>`:'<span></span>'}<span class="grid-time">${timeAgo(i.time)}</span></div></div></div>`).join('')}</div>`:'<div class="empty"><div class="empty-title">No items</div></div>';
     
     renderPlaces();
     const size=new Blob([JSON.stringify(items)]).size;
