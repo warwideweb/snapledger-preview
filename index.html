@@ -321,13 +321,27 @@
         <!-- BROWSE SCREEN -->
         <div class="screen hidden" id="browse">
             <div class="header">
-                <h1 style="font-size:24px;font-weight:700">Browse</h1>
+                <div class="header-row">
+                    <h1 style="font-size:24px;font-weight:700">Browse</h1>
+                    <div style="display:flex;gap:8px">
+                        <button class="btn btn-ghost btn-sm" id="view-toggle" onclick="toggleView()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                        </button>
+                        <button class="btn btn-ghost btn-sm" onclick="toggleSort()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M11 5h10M11 9h7M11 13h4M3 17l3 3 3-3M6 18V4"/></svg>
+                        </button>
+                    </div>
+                </div>
             </div>
             <div class="search-container">
                 <div class="search-box">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                     <input type="text" placeholder="Search screenshots..." id="search" oninput="renderBrowse()">
                 </div>
+            </div>
+            <!-- Sort indicator -->
+            <div id="sort-indicator" style="display:none;padding:0 16px 12px">
+                <span style="font-size:12px;color:var(--text2)">Sorted by: <span id="sort-label" style="color:var(--accent);font-weight:600">Newest</span></span>
             </div>
             <div class="filters" id="filters">
                 <div class="filter active" data-filter="all" onclick="setFilter('all',this)">All</div>
@@ -336,6 +350,11 @@
                 <div class="filter" data-filter="product" onclick="setFilter('product',this)">🛍️ Wants</div>
                 <div class="filter" data-filter="food" onclick="setFilter('food',this)">🍜 Food</div>
                 <div class="filter" data-filter="screenshot" onclick="setFilter('screenshot',this)">📱 Other</div>
+            </div>
+            <!-- Results count -->
+            <div style="padding:0 20px 12px;display:flex;justify-content:space-between;align-items:center">
+                <span id="browse-count" style="font-size:13px;color:var(--text2)">0 items</span>
+                <span id="browse-total" style="font-size:13px;font-weight:600;color:var(--green)"></span>
             </div>
             <div id="browse-content"></div>
         </div>
@@ -556,6 +575,43 @@
             </div>
         </div>
         
+        <!-- Edit Modal -->
+        <div class="modal" id="edit-modal">
+            <div class="modal-header">
+                <button class="modal-close" onclick="closeEditModal()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+                <span style="font-weight:600">Edit Item</span>
+                <button class="btn btn-sm btn-accent" onclick="saveEdit()">Save</button>
+            </div>
+            <div style="padding:20px;overflow-y:auto;flex:1">
+                <div style="margin-bottom:20px">
+                    <label style="display:block;font-size:13px;color:var(--text2);margin-bottom:8px">Title</label>
+                    <input type="text" id="edit-title" class="settings-input" style="width:100%;text-align:left;padding:14px 16px;border-radius:12px;font-size:16px">
+                </div>
+                <div style="margin-bottom:20px">
+                    <label style="display:block;font-size:13px;color:var(--text2);margin-bottom:8px">Amount</label>
+                    <input type="number" id="edit-amount" class="settings-input" placeholder="0" style="width:100%;text-align:left;padding:14px 16px;border-radius:12px;font-size:16px">
+                </div>
+                <div style="margin-bottom:20px">
+                    <label style="display:block;font-size:13px;color:var(--text2);margin-bottom:8px">Type</label>
+                    <select id="edit-type" class="settings-input" style="width:100%;text-align:left;padding:14px 16px;border-radius:12px;font-size:16px">
+                        <option value="receipt">🧾 Receipt</option>
+                        <option value="bill">📄 Bill</option>
+                        <option value="product">🛍️ Want</option>
+                        <option value="food">🍜 Food</option>
+                        <option value="cafe">☕ Cafe</option>
+                        <option value="travel">✈️ Travel</option>
+                        <option value="transfer">💸 Transfer</option>
+                        <option value="screenshot">📱 Screenshot</option>
+                    </select>
+                </div>
+                <div id="edit-preview" style="margin-top:20px;border-radius:16px;overflow:hidden;background:var(--card2)">
+                    <img id="edit-preview-img" style="width:100%;max-height:300px;object-fit:contain">
+                </div>
+            </div>
+        </div>
+        
         <!-- Toast -->
         <div class="toast" id="toast"></div>
     </div>
@@ -569,6 +625,8 @@ let items = JSON.parse(localStorage.getItem('stashd_items') || '[]');
 let settings = JSON.parse(localStorage.getItem('stashd_settings') || '{}');
 let currentFilter = 'all';
 let currentItemId = null;
+let browseView = 'grid'; // 'grid' or 'list'
+let sortBy = 'newest'; // 'newest', 'oldest', 'highest', 'lowest'
 
 // Defaults
 settings.useAI = settings.useAI !== false;
@@ -939,7 +997,7 @@ function renderReminders() {
 
 function renderBrowse() {
     const query = document.getElementById('search').value.toLowerCase();
-    let filtered = items;
+    let filtered = [...items];
     
     // Apply filter
     if (currentFilter !== 'all') {
@@ -951,29 +1009,77 @@ function renderBrowse() {
         filtered = filtered.filter(i => (i.title || '').toLowerCase().includes(query));
     }
     
-    document.getElementById('browse-content').innerHTML = filtered.length ? `
-        <div class="grid">
-            ${filtered.map(item => {
-                const type = TYPES[item.typeId] || TYPES.screenshot;
-                return `
-                    <div class="grid-item" onclick="openItem(${item.id})">
-                        <img src="${item.uri}" onerror="this.parentElement.style.display='none'">
-                        <div class="grid-overlay">
-                            <div class="grid-type" style="color:${type.color}">${type.icon} ${type.label}</div>
-                            <div class="grid-title">${escapeHtml(item.title)}</div>
-                            ${item.amount ? `<div class="grid-amount">${formatCurrency(item.amount)}</div>` : ''}
+    // Apply sort
+    switch (sortBy) {
+        case 'oldest':
+            filtered.sort((a, b) => a.time - b.time);
+            break;
+        case 'highest':
+            filtered.sort((a, b) => (b.amount || 0) - (a.amount || 0));
+            break;
+        case 'lowest':
+            filtered.sort((a, b) => (a.amount || 0) - (b.amount || 0));
+            break;
+        default: // newest
+            filtered.sort((a, b) => b.time - a.time);
+    }
+    
+    // Update counts
+    const total = filtered.reduce((sum, i) => sum + (i.amount || 0), 0);
+    document.getElementById('browse-count').textContent = filtered.length + ' item' + (filtered.length !== 1 ? 's' : '');
+    document.getElementById('browse-total').textContent = total > 0 ? formatCurrency(total) + ' total' : '';
+    
+    if (!filtered.length) {
+        document.getElementById('browse-content').innerHTML = `
+            <div class="empty">
+                <div class="empty-icon">🔍</div>
+                <div class="empty-title">No results</div>
+                <div class="empty-text">Try a different search or filter</div>
+            </div>
+        `;
+        return;
+    }
+    
+    if (browseView === 'list') {
+        document.getElementById('browse-content').innerHTML = `
+            <div class="item-list">
+                ${filtered.map(item => {
+                    const type = TYPES[item.typeId] || TYPES.screenshot;
+                    return `
+                        <div class="list-item" onclick="openItem(${item.id})">
+                            <img src="${item.uri}" class="list-thumb" onerror="this.style.display='none'">
+                            <div class="list-content">
+                                <div class="list-title">${escapeHtml(item.title)}</div>
+                                <div class="list-sub">
+                                    <span class="list-tag" style="background:${type.color}20;color:${type.color}">${type.icon} ${type.label}</span>
+                                    <span>${timeAgo(item.time)}</span>
+                                </div>
+                            </div>
+                            ${item.amount ? `<div class="list-amount">${formatCurrency(item.amount)}</div>` : ''}
                         </div>
-                    </div>
-                `;
-            }).join('')}
-        </div>
-    ` : `
-        <div class="empty">
-            <div class="empty-icon">🔍</div>
-            <div class="empty-title">No results</div>
-            <div class="empty-text">Try a different search or filter</div>
-        </div>
-    `;
+                    `;
+                }).join('')}
+            </div>
+        `;
+    } else {
+        document.getElementById('browse-content').innerHTML = `
+            <div class="grid">
+                ${filtered.map(item => {
+                    const type = TYPES[item.typeId] || TYPES.screenshot;
+                    return `
+                        <div class="grid-item" onclick="openItem(${item.id})">
+                            <img src="${item.uri}" onerror="this.parentElement.style.display='none'">
+                            <div class="grid-overlay">
+                                <div class="grid-type" style="color:${type.color}">${type.icon} ${type.label}</div>
+                                <div class="grid-title">${escapeHtml(item.title)}</div>
+                                ${item.amount ? `<div class="grid-amount">${formatCurrency(item.amount)}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }
 }
 
 function renderSettings() {
@@ -1145,8 +1251,56 @@ function deleteItem() {
 }
 
 function editItem() {
-    // TODO: Implement edit modal
-    toast('Edit coming soon');
+    const item = items.find(i => i.id === currentItemId);
+    if (!item) return;
+    
+    document.getElementById('edit-title').value = item.title || '';
+    document.getElementById('edit-amount').value = item.amount || '';
+    document.getElementById('edit-type').value = item.typeId || 'screenshot';
+    document.getElementById('edit-preview-img').src = item.uri;
+    
+    closeModal();
+    document.getElementById('edit-modal').classList.add('show');
+}
+
+function closeEditModal() {
+    document.getElementById('edit-modal').classList.remove('show');
+}
+
+function saveEdit() {
+    const item = items.find(i => i.id === currentItemId);
+    if (!item) return;
+    
+    item.title = document.getElementById('edit-title').value || 'Screenshot';
+    item.amount = parseFloat(document.getElementById('edit-amount').value) || null;
+    item.typeId = document.getElementById('edit-type').value;
+    
+    saveItems();
+    render();
+    closeEditModal();
+    toast('Item updated');
+}
+
+function toggleView() {
+    browseView = browseView === 'grid' ? 'list' : 'grid';
+    const icon = browseView === 'grid' 
+        ? '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>'
+        : '<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>';
+    document.getElementById('view-toggle').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">${icon}</svg>`;
+    renderBrowse();
+}
+
+function toggleSort() {
+    const sorts = ['newest', 'oldest', 'highest', 'lowest'];
+    const idx = sorts.indexOf(sortBy);
+    sortBy = sorts[(idx + 1) % sorts.length];
+    
+    const labels = { newest: 'Newest', oldest: 'Oldest', highest: 'Highest $', lowest: 'Lowest $' };
+    document.getElementById('sort-label').textContent = labels[sortBy];
+    document.getElementById('sort-indicator').style.display = 'block';
+    
+    renderBrowse();
+    toast('Sorted by ' + labels[sortBy]);
 }
 
 // ============ SETTINGS ============
