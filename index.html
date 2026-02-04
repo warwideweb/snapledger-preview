@@ -4,45 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#000000">
+    <meta name="theme-color" content="#000">
     <title>SnapLedger</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
         :root {
             --bg: #000;
-            --surface: #1c1c1e;
-            --surface2: #2c2c2e;
-            --border: #38383a;
+            --card: #111;
+            --card2: #1a1a1a;
+            --border: #222;
             --text: #fff;
-            --text2: #ebebf5;
-            --muted: #8e8e93;
-            --accent: #0a84ff;
-            --green: #30d158;
-            --orange: #ff9f0a;
-            --red: #ff453a;
-            --purple: #bf5af2;
-            --pink: #ff375f;
-            --radius: 14px;
+            --text2: #999;
+            --accent: #fff;
+            --green: #00c853;
+            --red: #ff3b30;
+            --blue: #007aff;
+            --orange: #ff9500;
+            --purple: #af52de;
+            --pink: #ff2d55;
+            --yellow: #ffcc00;
+            --r: 16px;
         }
-        html, body { 
-            height: 100%; 
-            overflow: hidden;
-            font-family: -apple-system, 'SF Pro Display', 'Inter', sans-serif;
+        
+        html, body {
+            height: 100%;
+            font-family: 'Inter', -apple-system, sans-serif;
             background: var(--bg);
             color: var(--text);
-            font-size: 17px;
-            -webkit-font-smoothing: antialiased;
+            overflow: hidden;
+            font-size: 15px;
+            line-height: 1.4;
         }
         
         .app {
             height: 100%;
+            max-width: 480px;
+            margin: 0 auto;
             display: flex;
             flex-direction: column;
-            max-width: 430px;
-            margin: 0 auto;
         }
         
         /* Screens */
@@ -56,107 +58,94 @@
         
         /* Header */
         .header {
-            padding: 12px 20px;
-            padding-top: max(12px, env(safe-area-inset-top));
-            position: sticky;
-            top: 0;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            z-index: 10;
+            padding: 20px;
+            padding-top: max(20px, env(safe-area-inset-top));
         }
-        .header-row {
+        .header-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 4px;
         }
         .title {
-            font-size: 34px;
+            font-size: 32px;
             font-weight: 700;
             letter-spacing: -0.5px;
         }
         .subtitle {
-            font-size: 13px;
-            color: var(--muted);
-            margin-top: 2px;
+            font-size: 14px;
+            color: var(--text2);
         }
         
         /* Buttons */
         .btn {
-            background: var(--accent);
-            color: #fff;
+            background: var(--card2);
+            color: var(--text);
             border: none;
-            padding: 10px 18px;
-            border-radius: 20px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.1s, opacity 0.1s;
-        }
-        .btn:active { transform: scale(0.96); opacity: 0.9; }
-        .btn-secondary {
-            background: var(--surface2);
-            color: var(--accent);
-        }
-        .btn-icon {
             width: 44px;
             height: 44px;
-            border-radius: 22px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
-            padding: 0;
+            transition: all 0.15s;
+        }
+        .btn:active { transform: scale(0.92); background: var(--border); }
+        .btn-primary {
+            background: var(--text);
+            color: var(--bg);
+            width: auto;
+            padding: 12px 24px;
+            border-radius: 100px;
+            font-size: 15px;
+            font-weight: 600;
         }
         
         /* Search */
-        .search-bar {
-            margin: 8px 20px 16px;
-            position: relative;
-        }
-        .search-input {
-            width: 100%;
-            background: var(--surface);
-            border: none;
+        .search {
+            margin: 0 20px 16px;
+            background: var(--card);
             border-radius: 12px;
-            padding: 12px 16px 12px 44px;
-            font-size: 17px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .search svg { width: 18px; height: 18px; color: var(--text2); flex-shrink: 0; }
+        .search input {
+            flex: 1;
+            background: none;
+            border: none;
             color: var(--text);
+            font-size: 16px;
             outline: none;
         }
-        .search-input::placeholder { color: var(--muted); }
-        .search-icon {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 16px;
-            color: var(--muted);
-        }
+        .search input::placeholder { color: var(--text2); }
         
-        /* Empty state */
+        /* Empty */
         .empty {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 50vh;
+            padding: 60px 40px;
             text-align: center;
-            padding: 40px;
         }
         .empty-icon {
-            width: 80px;
-            height: 80px;
-            background: var(--surface);
-            border-radius: 24px;
+            width: 72px;
+            height: 72px;
+            background: var(--card);
+            border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 36px;
             margin-bottom: 20px;
         }
-        .empty-title { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
-        .empty-text { color: var(--muted); font-size: 15px; margin-bottom: 24px; line-height: 1.4; }
+        .empty-icon svg { width: 32px; height: 32px; color: var(--text2); }
+        .empty-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+        .empty-text { color: var(--text2); font-size: 14px; margin-bottom: 24px; }
         
         /* Grid */
         .grid {
@@ -166,262 +155,247 @@
             padding: 0 20px;
         }
         .card {
-            background: var(--surface);
-            border-radius: var(--radius);
+            background: var(--card);
+            border-radius: var(--r);
             overflow: hidden;
-            transition: transform 0.2s;
         }
-        .card:active { transform: scale(0.98); }
         .card-img {
             width: 100%;
             aspect-ratio: 1;
             object-fit: cover;
-            background: var(--surface2);
+            background: var(--card2);
+            display: block;
         }
         .card-body { padding: 14px; }
-        .card-type {
+        .card-row {
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: space-between;
             margin-bottom: 10px;
         }
-        .type-badge {
-            display: flex;
+        .tag {
+            display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: var(--surface2);
+            background: var(--card2);
             padding: 6px 10px;
             border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
         }
-        .type-emoji { font-size: 14px; }
-        .type-label { font-size: 13px; font-weight: 500; text-transform: capitalize; }
+        .tag svg { width: 14px; height: 14px; }
         .confidence {
-            height: 4px;
-            background: var(--surface2);
+            height: 3px;
+            background: var(--card2);
             border-radius: 2px;
             overflow: hidden;
             margin-bottom: 10px;
         }
-        .confidence-fill {
+        .confidence-bar {
             height: 100%;
-            background: linear-gradient(90deg, var(--green), var(--accent));
-            transition: width 0.5s ease-out;
+            background: var(--green);
+            border-radius: 2px;
         }
-        .card-meta {
+        .card-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .card-amount { color: var(--green); font-weight: 600; font-size: 16px; }
-        .card-time { font-size: 12px; color: var(--muted); }
+        .amount { font-weight: 600; color: var(--green); }
+        .time { font-size: 12px; color: var(--text2); }
         
-        /* Section */
-        .section { margin-bottom: 32px; }
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-            margin-bottom: 14px;
-        }
-        .section-title {
-            font-size: 22px;
-            font-weight: 600;
-        }
-        .section-link {
-            color: var(--accent);
-            font-size: 15px;
-        }
-        
-        /* List items */
+        /* List */
         .list { padding: 0 20px; }
         .list-item {
             display: flex;
             align-items: center;
-            background: var(--surface);
-            border-radius: var(--radius);
+            background: var(--card);
+            border-radius: var(--r);
             padding: 16px;
-            margin-bottom: 10px;
-            transition: transform 0.1s;
+            margin-bottom: 8px;
+            gap: 14px;
         }
-        .list-item:active { transform: scale(0.98); }
         .list-icon {
             width: 48px;
             height: 48px;
-            background: var(--surface2);
+            background: var(--card2);
             border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
-            margin-right: 14px;
         }
-        .list-content { flex: 1; }
-        .list-title { font-size: 17px; font-weight: 500; }
-        .list-subtitle { font-size: 13px; color: var(--muted); margin-top: 2px; }
-        .list-value { font-size: 17px; font-weight: 500; }
-        .list-badge {
-            background: var(--surface2);
-            padding: 6px 12px;
-            border-radius: 10px;
-            font-size: 15px;
+        .list-icon svg { width: 22px; height: 22px; color: var(--text2); }
+        .list-content { flex: 1; min-width: 0; }
+        .list-title { font-weight: 500; margin-bottom: 2px; }
+        .list-sub { font-size: 13px; color: var(--text2); }
+        .list-value { font-weight: 600; }
+        .badge {
+            background: var(--card2);
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 14px;
             font-weight: 500;
         }
         
-        /* Summary cards */
-        .summary-grid {
+        /* Stats */
+        .stats {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
             padding: 0 20px;
-            margin-bottom: 28px;
+            margin-bottom: 24px;
         }
-        .summary-card {
-            background: var(--surface);
-            border-radius: 18px;
+        .stat {
+            background: var(--card);
+            border-radius: var(--r);
             padding: 20px;
         }
-        .summary-label {
+        .stat-label {
             font-size: 13px;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            color: var(--text2);
             margin-bottom: 8px;
         }
-        .summary-value {
-            font-size: 32px;
-            font-weight: 300;
+        .stat-value {
+            font-size: 28px;
+            font-weight: 600;
             letter-spacing: -1px;
         }
-        .summary-change {
-            font-size: 13px;
+        .stat-change {
+            font-size: 12px;
             color: var(--green);
-            margin-top: 6px;
+            margin-top: 4px;
+        }
+        
+        /* Section */
+        .section { margin-bottom: 28px; }
+        .section-title {
+            font-size: 13px;
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0 20px;
+            margin-bottom: 12px;
         }
         
         /* Chart */
-        .chart-card {
-            background: var(--surface);
-            border-radius: 18px;
+        .chart {
+            background: var(--card);
+            border-radius: var(--r);
             padding: 20px;
             margin: 0 20px 20px;
-        }
-        .chart-title {
-            font-size: 13px;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 16px;
         }
         .chart-bars {
             display: flex;
             align-items: flex-end;
-            height: 100px;
-            gap: 6px;
+            height: 80px;
+            gap: 8px;
+            margin-bottom: 12px;
         }
         .chart-bar {
             flex: 1;
-            background: var(--accent);
+            background: linear-gradient(to top, var(--blue), var(--purple));
             border-radius: 4px;
-            min-height: 8px;
-            transition: height 0.3s ease-out;
+            min-height: 4px;
         }
         .chart-labels {
             display: flex;
             justify-content: space-between;
-            margin-top: 10px;
         }
         .chart-label {
             font-size: 11px;
-            color: var(--muted);
+            color: var(--text2);
         }
         
-        /* Category breakdown */
-        .category-row {
+        /* Categories */
+        .cat-row {
             display: flex;
             align-items: center;
-            padding: 14px 0;
-            border-bottom: 1px solid var(--border);
+            padding: 12px 0;
         }
-        .category-row:last-child { border-bottom: none; }
-        .category-dot {
+        .cat-row:not(:last-child) { border-bottom: 1px solid var(--border); }
+        .cat-dot {
             width: 10px;
             height: 10px;
             border-radius: 50%;
-            margin-right: 12px;
+            margin-right: 14px;
         }
-        .category-name { flex: 1; font-size: 15px; }
-        .category-bar {
-            width: 80px;
-            height: 6px;
-            background: var(--surface2);
-            border-radius: 3px;
+        .cat-name {
+            flex: 1;
+            font-size: 14px;
+            text-transform: capitalize;
+        }
+        .cat-bar {
+            width: 60px;
+            height: 4px;
+            background: var(--card2);
+            border-radius: 2px;
+            margin-right: 14px;
             overflow: hidden;
-            margin-right: 12px;
         }
-        .category-fill { height: 100%; border-radius: 3px; }
-        .category-amount { font-size: 15px; color: var(--muted); width: 60px; text-align: right; }
+        .cat-fill { height: 100%; border-radius: 2px; }
+        .cat-amt {
+            font-size: 14px;
+            color: var(--text2);
+            width: 70px;
+            text-align: right;
+        }
         
         /* Settings */
         .settings-group {
-            background: var(--surface);
-            border-radius: var(--radius);
-            margin: 0 20px 20px;
+            background: var(--card);
+            border-radius: var(--r);
+            margin: 0 20px 16px;
             overflow: hidden;
         }
         .settings-item {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
             padding: 16px;
-            border-bottom: 1px solid var(--border);
         }
-        .settings-item:last-child { border-bottom: none; }
-        .settings-label { font-size: 17px; }
-        .settings-value { font-size: 17px; color: var(--muted); }
+        .settings-item:not(:last-child) { border-bottom: 1px solid var(--border); }
+        .settings-label { font-size: 15px; }
+        .settings-value { font-size: 15px; color: var(--text2); }
         .toggle {
-            width: 51px;
-            height: 31px;
-            background: var(--surface2);
-            border-radius: 16px;
+            width: 50px;
+            height: 30px;
+            background: var(--card2);
+            border-radius: 15px;
             position: relative;
             cursor: pointer;
-            transition: background 0.2s;
         }
         .toggle.on { background: var(--green); }
         .toggle::after {
             content: '';
             position: absolute;
-            width: 27px;
-            height: 27px;
+            width: 26px;
+            height: 26px;
             background: #fff;
             border-radius: 50%;
             top: 2px;
             left: 2px;
             transition: transform 0.2s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         .toggle.on::after { transform: translateX(20px); }
         
         /* Tab bar */
-        .tab-bar {
+        .tabs {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            display: flex;
-            justify-content: center;
-            background: rgba(28,28,30,0.9);
+            background: rgba(0,0,0,0.9);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-top: 1px solid var(--border);
-            padding-bottom: max(20px, env(safe-area-inset-bottom));
-            padding-top: 8px;
-            z-index: 100;
-        }
-        .tab-bar-inner {
+            padding: 8px 0;
+            padding-bottom: max(8px, env(safe-area-inset-bottom));
             display: flex;
-            max-width: 430px;
+            justify-content: center;
+        }
+        .tabs-inner {
+            display: flex;
+            max-width: 480px;
             width: 100%;
         }
         .tab {
@@ -429,55 +403,44 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 4px;
+            padding: 8px;
             cursor: pointer;
-            transition: opacity 0.2s;
         }
-        .tab-icon {
-            font-size: 26px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0.5;
-            transition: opacity 0.2s;
+        .tab svg {
+            width: 24px;
+            height: 24px;
+            color: var(--text2);
+            margin-bottom: 4px;
         }
-        .tab.active .tab-icon { opacity: 1; }
-        .tab-label {
+        .tab.active svg { color: var(--text); }
+        .tab span {
             font-size: 10px;
-            color: var(--muted);
-            margin-top: 2px;
+            color: var(--text2);
         }
-        .tab.active .tab-label { color: var(--accent); }
+        .tab.active span { color: var(--text); }
         
         /* Toast */
         .toast {
             position: fixed;
             bottom: 100px;
             left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: var(--surface2);
+            transform: translateX(-50%) translateY(20px);
+            background: var(--card);
+            border: 1px solid var(--border);
             padding: 14px 24px;
-            border-radius: 14px;
-            font-size: 15px;
+            border-radius: 100px;
+            font-size: 14px;
             font-weight: 500;
             opacity: 0;
-            transition: transform 0.3s, opacity 0.3s;
-            z-index: 200;
+            transition: all 0.3s;
+            z-index: 999;
         }
-        .toast.show {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
         
         #file-input { display: none; }
         
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-in { animation: fadeIn 0.3s ease-out; }
+        /* Icons */
+        .icon { width: 20px; height: 20px; }
     </style>
 </head>
 <body>
@@ -485,69 +448,57 @@
         <!-- INBOX -->
         <div class="screen" id="inbox">
             <div class="header">
-                <div class="header-row">
-                    <div>
-                        <h1 class="title">Inbox</h1>
-                        <p class="subtitle" id="inbox-subtitle">No items</p>
-                    </div>
-                    <button class="btn btn-icon" onclick="pickFiles()">➕</button>
+                <div class="header-top">
+                    <h1 class="title">Inbox</h1>
+                    <button class="btn" onclick="pickFiles()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                    </button>
                 </div>
+                <p class="subtitle" id="inbox-sub">Add screenshots to get started</p>
             </div>
-            <div class="search-bar">
-                <span class="search-icon">🔍</span>
-                <input type="text" class="search-input" placeholder="Search screenshots..." id="search-input" oninput="filterScreenshots()">
+            <div class="search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <input type="text" placeholder="Search..." id="search" oninput="render()">
             </div>
-            <div id="inbox-content"></div>
+            <div id="inbox-grid"></div>
         </div>
         
         <!-- LIBRARY -->
         <div class="screen hidden" id="library">
             <div class="header">
                 <h1 class="title">Library</h1>
+                <p class="subtitle">Auto-sorted folders</p>
             </div>
-            <div class="list" id="folder-list"></div>
+            <div class="list" id="folders"></div>
         </div>
         
         <!-- SPENDING -->
         <div class="screen hidden" id="spending">
             <div class="header">
                 <h1 class="title">Spending</h1>
+                <p class="subtitle" id="spending-sub">No data yet</p>
             </div>
-            <div class="summary-grid">
-                <div class="summary-card">
-                    <div class="summary-label">This Week</div>
-                    <div class="summary-value" id="weekly-total">฿0</div>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-label">This Week</div>
+                    <div class="stat-value" id="week-total">฿0</div>
                 </div>
-                <div class="summary-card">
-                    <div class="summary-label">This Month</div>
-                    <div class="summary-value" id="monthly-total">฿0</div>
-                </div>
-            </div>
-            
-            <div class="chart-card">
-                <div class="chart-title">Last 7 Days</div>
-                <div class="chart-bars" id="chart-bars"></div>
-                <div class="chart-labels">
-                    <span class="chart-label">Mon</span>
-                    <span class="chart-label">Tue</span>
-                    <span class="chart-label">Wed</span>
-                    <span class="chart-label">Thu</span>
-                    <span class="chart-label">Fri</span>
-                    <span class="chart-label">Sat</span>
-                    <span class="chart-label">Sun</span>
+                <div class="stat">
+                    <div class="stat-label">This Month</div>
+                    <div class="stat-value" id="month-total">฿0</div>
                 </div>
             </div>
-            
-            <div class="chart-card">
-                <div class="chart-title">Categories</div>
-                <div id="category-breakdown"></div>
+            <div class="chart">
+                <div class="chart-bars" id="chart"></div>
+                <div class="chart-labels" id="chart-labels"></div>
             </div>
-            
             <div class="section">
-                <div class="section-header">
-                    <span class="section-title">Transactions</span>
-                </div>
-                <div class="list" id="tx-list"></div>
+                <div class="section-title">By Category</div>
+                <div class="chart" id="categories"></div>
+            </div>
+            <div class="section">
+                <div class="section-title">Recent</div>
+                <div class="list" id="transactions"></div>
             </div>
         </div>
         
@@ -556,40 +507,33 @@
             <div class="header">
                 <h1 class="title">Settings</h1>
             </div>
-            
+            <div class="section-title">Processing</div>
             <div class="settings-group">
                 <div class="settings-item">
                     <span class="settings-label">AI Classification</span>
-                    <span class="settings-value">Demo Mode</span>
+                    <span class="settings-value">Demo</span>
                 </div>
-            </div>
-            
-            <div class="settings-group">
                 <div class="settings-item">
-                    <span class="settings-label">Auto-sort to folders</span>
+                    <span class="settings-label">Auto-sort</span>
                     <div class="toggle on" onclick="this.classList.toggle('on')"></div>
                 </div>
                 <div class="settings-item">
-                    <span class="settings-label">On-device processing</span>
+                    <span class="settings-label">On-device only</span>
                     <div class="toggle on" onclick="this.classList.toggle('on')"></div>
                 </div>
-                <div class="settings-item">
-                    <span class="settings-label">Daily digest</span>
-                    <div class="toggle" onclick="this.classList.toggle('on')"></div>
-                </div>
             </div>
-            
+            <div class="section-title">Sync</div>
             <div class="settings-group">
                 <div class="settings-item">
                     <span class="settings-label">Google Drive</span>
-                    <span class="settings-value">Not connected</span>
+                    <span class="settings-value">Connect →</span>
                 </div>
                 <div class="settings-item">
-                    <span class="settings-label">Export Data</span>
-                    <span class="settings-value">CSV →</span>
+                    <span class="settings-label">Export CSV</span>
+                    <span class="settings-value">→</span>
                 </div>
             </div>
-            
+            <div class="section-title">App</div>
             <div class="settings-group">
                 <div class="settings-item">
                     <span class="settings-label">Version</span>
@@ -599,23 +543,23 @@
         </div>
         
         <!-- TAB BAR -->
-        <div class="tab-bar">
-            <div class="tab-bar-inner">
+        <div class="tabs">
+            <div class="tabs-inner">
                 <div class="tab active" data-tab="inbox">
-                    <span class="tab-icon">📥</span>
-                    <span class="tab-label">Inbox</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-6l-2 3H10l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+                    <span>Inbox</span>
                 </div>
                 <div class="tab" data-tab="library">
-                    <span class="tab-icon">📁</span>
-                    <span class="tab-label">Library</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                    <span>Library</span>
                 </div>
                 <div class="tab" data-tab="spending">
-                    <span class="tab-icon">📊</span>
-                    <span class="tab-label">Spending</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+                    <span>Spending</span>
                 </div>
                 <div class="tab" data-tab="settings">
-                    <span class="tab-icon">⚙️</span>
-                    <span class="tab-label">Settings</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    <span>Settings</span>
                 </div>
             </div>
         </div>
@@ -626,228 +570,204 @@
     <input type="file" id="file-input" accept="image/*" multiple>
 
 <script>
-// Data
-let screenshots = [];
-let searchQuery = '';
+let items = [];
 
 const TYPES = [
-    { id: 'receipt', emoji: '🧾', label: 'Receipt', financial: true },
-    { id: 'bill', emoji: '📄', label: 'Bill', financial: true },
-    { id: 'transfer', emoji: '💸', label: 'Transfer', financial: true },
-    { id: 'order', emoji: '📦', label: 'Order', financial: true },
-    { id: 'subscription', emoji: '🔄', label: 'Subscription', financial: true },
-    { id: 'inspiration', emoji: '💡', label: 'Inspiration', financial: false },
+    { id: 'receipt', icon: '🧾', label: 'Receipt', fin: true },
+    { id: 'bill', icon: '📄', label: 'Bill', fin: true },
+    { id: 'transfer', icon: '💸', label: 'Transfer', fin: true },
+    { id: 'order', icon: '📦', label: 'Order', fin: true },
+    { id: 'subscription', icon: '🔄', label: 'Subscription', fin: true },
+    { id: 'inspiration', icon: '💡', label: 'Inspiration', fin: false },
 ];
 
-const CATEGORIES = [
-    { id: 'food', color: '#ff453a' },
-    { id: 'shopping', color: '#ff9f0a' },
-    { id: 'transport', color: '#30d158' },
-    { id: 'utilities', color: '#0a84ff' },
-    { id: 'entertainment', color: '#bf5af2' },
+const CATS = [
+    { id: 'food', color: '#ff3b30', merchants: ['Grab Food', 'LINE Man', 'Foodpanda', '7-Eleven', 'Lotus\'s', 'Big C', 'Starbucks'] },
+    { id: 'shopping', color: '#ff9500', merchants: ['Shopee', 'Lazada', 'Amazon', 'Central', 'Uniqlo'] },
+    { id: 'transport', color: '#30d158', merchants: ['Grab', 'Bolt', 'BTS', 'MRT', 'Shell', 'PTT'] },
+    { id: 'utilities', color: '#007aff', merchants: ['AIS', 'TRUE', 'DTAC', 'MEA', 'PEA'] },
+    { id: 'entertainment', color: '#af52de', merchants: ['Netflix', 'Spotify', 'YouTube', 'Steam'] },
 ];
-
-const MERCHANTS = ['Grab Food', 'LINE Man', '7-Eleven', 'Lotus\'s', 'Big C', 'Amazon', 'Shopee', 'Lazada', 'Netflix', 'Spotify', 'AIS', 'TRUE', 'PTT', 'Shell'];
 
 const FOLDERS = [
-    { id: 'receipts', name: 'Receipts', icon: '🧾', path: '/Finance/Receipts', types: ['receipt'] },
-    { id: 'bills', name: 'Bills', icon: '📄', path: '/Finance/Bills', types: ['bill'] },
-    { id: 'subscriptions', name: 'Subscriptions', icon: '🔄', path: '/Finance/Subscriptions', types: ['subscription'] },
-    { id: 'orders', name: 'Orders', icon: '📦', path: '/Shopping/Orders', types: ['order'] },
-    { id: 'transfers', name: 'Transfers', icon: '💸', path: '/Finance/Transfers', types: ['transfer'] },
-    { id: 'inspiration', name: 'Inspiration', icon: '💡', path: '/Inspiration', types: ['inspiration'] },
+    { id: 'receipts', name: 'Receipts', types: ['receipt'] },
+    { id: 'bills', name: 'Bills', types: ['bill'] },
+    { id: 'transfers', name: 'Transfers', types: ['transfer'] },
+    { id: 'orders', name: 'Orders', types: ['order'] },
+    { id: 'subscriptions', name: 'Subscriptions', types: ['subscription'] },
+    { id: 'inspiration', name: 'Inspiration', types: ['inspiration'] },
 ];
 
-// Helpers
-function pickFiles() {
-    document.getElementById('file-input').click();
+const ICONS = {
+    receipts: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>',
+    bills: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>',
+    transfers: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m17 2 4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>',
+    orders: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>',
+    subscriptions: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>',
+    inspiration: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636-.707.707M21 12h-1M4 12H3m3.343-5.657-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>',
+};
+
+function pickFiles() { document.getElementById('file-input').click(); }
+
+function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-function showToast(msg) {
-    const toast = document.getElementById('toast');
-    toast.textContent = msg;
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 2000);
-}
-
-function timeAgo(date) {
-    const mins = Math.floor((Date.now() - date.getTime()) / 60000);
-    if (mins < 1) return 'Just now';
-    if (mins < 60) return `${mins}m ago`;
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
-    return `${Math.floor(hrs / 24)}d ago`;
-}
-
-// Classification (mock AI)
 function classify() {
     const type = TYPES[Math.floor(Math.random() * TYPES.length)];
-    const category = CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];
+    const cat = CATS[Math.floor(Math.random() * CATS.length)];
+    const merchant = type.fin ? cat.merchants[Math.floor(Math.random() * cat.merchants.length)] : null;
     return {
         type: type.id,
-        typeEmoji: type.emoji,
+        typeIcon: type.icon,
         typeLabel: type.label,
-        isFinancial: type.financial,
-        category: category.id,
-        categoryColor: category.color,
-        confidence: 0.75 + Math.random() * 0.2,
-        amount: type.financial ? Math.floor(Math.random() * 800) + 50 : null,
-        merchant: type.financial ? MERCHANTS[Math.floor(Math.random() * MERCHANTS.length)] : null,
+        fin: type.fin,
+        cat: cat.id,
+        catColor: cat.color,
+        merchant,
+        amount: type.fin ? Math.floor(Math.random() * 500) + 50 : null,
+        confidence: 0.8 + Math.random() * 0.18,
     };
 }
 
-// File handler
-document.getElementById('file-input').addEventListener('change', (e) => {
-    const files = Array.from(e.target.files);
-    let processed = 0;
+function timeAgo(d) {
+    const m = Math.floor((Date.now() - d) / 60000);
+    if (m < 1) return 'now';
+    if (m < 60) return m + 'm';
+    if (m < 1440) return Math.floor(m/60) + 'h';
+    return Math.floor(m/1440) + 'd';
+}
+
+document.getElementById('file-input').addEventListener('change', e => {
+    const files = [...e.target.files];
+    if (!files.length) return;
     
-    files.forEach(file => {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            const result = classify();
-            screenshots.unshift({
+    let loaded = 0;
+    files.forEach(f => {
+        const r = new FileReader();
+        r.onload = ev => {
+            items.unshift({
                 id: Date.now() + Math.random(),
                 uri: ev.target.result,
-                ...result,
-                timestamp: new Date(),
+                time: Date.now(),
+                ...classify()
             });
-            processed++;
-            if (processed === files.length) {
+            loaded++;
+            if (loaded === files.length) {
                 render();
-                showToast(`✓ ${files.length} screenshot${files.length > 1 ? 's' : ''} classified`);
+                toast('✓ ' + files.length + ' classified');
             }
         };
-        reader.readAsDataURL(file);
+        r.readAsDataURL(f);
     });
     e.target.value = '';
 });
 
-// Tab switching
-document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-        tab.classList.add('active');
-        const screen = document.getElementById(tab.dataset.tab);
-        screen.classList.remove('hidden');
-        screen.scrollTop = 0;
-    });
+document.querySelectorAll('.tab').forEach(t => {
+    t.onclick = () => {
+        document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+        document.querySelectorAll('.screen').forEach(x => x.classList.add('hidden'));
+        t.classList.add('active');
+        document.getElementById(t.dataset.tab).classList.remove('hidden');
+    };
 });
 
-// Search
-function filterScreenshots() {
-    searchQuery = document.getElementById('search-input').value.toLowerCase();
-    render();
-}
-
-// Render
 function render() {
-    const filtered = screenshots.filter(s => 
-        !searchQuery || 
-        s.typeLabel.toLowerCase().includes(searchQuery) ||
-        (s.merchant && s.merchant.toLowerCase().includes(searchQuery)) ||
-        s.category.toLowerCase().includes(searchQuery)
-    );
+    const q = document.getElementById('search').value.toLowerCase();
+    const filtered = items.filter(i => !q || i.typeLabel.toLowerCase().includes(q) || (i.merchant||'').toLowerCase().includes(q) || i.cat.includes(q));
     
-    // Inbox subtitle
-    document.getElementById('inbox-subtitle').textContent = 
-        screenshots.length === 0 ? 'No items' : `${screenshots.length} item${screenshots.length > 1 ? 's' : ''}`;
+    // Inbox
+    document.getElementById('inbox-sub').textContent = items.length ? items.length + ' items' : 'Add screenshots to get started';
     
-    // Inbox content
-    const inboxContent = document.getElementById('inbox-content');
-    if (filtered.length === 0) {
-        inboxContent.innerHTML = `
-            <div class="empty">
-                <div class="empty-icon">📷</div>
-                <div class="empty-title">${searchQuery ? 'No results' : 'No Screenshots'}</div>
-                <div class="empty-text">${searchQuery ? 'Try a different search' : 'Import screenshots to get started.<br>They\'ll be automatically classified.'}</div>
-                ${!searchQuery ? '<button class="btn" onclick="pickFiles()">Import Screenshots</button>' : ''}
-            </div>`;
+    const grid = document.getElementById('inbox-grid');
+    if (!filtered.length) {
+        grid.innerHTML = `<div class="empty">
+            <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></div>
+            <div class="empty-title">${q ? 'No results' : 'No screenshots'}</div>
+            <div class="empty-text">${q ? 'Try different keywords' : 'Import images to classify and track spending'}</div>
+            ${!q ? '<button class="btn btn-primary" onclick="pickFiles()">Import</button>' : ''}
+        </div>`;
     } else {
-        inboxContent.innerHTML = `<div class="grid animate-in">${filtered.map(s => `
+        grid.innerHTML = '<div class="grid">' + filtered.map(i => `
             <div class="card">
-                <img src="${s.uri}" class="card-img" loading="lazy">
+                <img src="${i.uri}" class="card-img">
                 <div class="card-body">
-                    <div class="card-type">
-                        <div class="type-badge">
-                            <span class="type-emoji">${s.typeEmoji}</span>
-                            <span class="type-label">${s.typeLabel}</span>
-                        </div>
+                    <div class="card-row">
+                        <span class="tag">${i.typeIcon} ${i.typeLabel}</span>
                     </div>
-                    <div class="confidence"><div class="confidence-fill" style="width:${s.confidence*100}%"></div></div>
-                    <div class="card-meta">
-                        ${s.amount ? `<span class="card-amount">฿${s.amount.toLocaleString()}</span>` : '<span></span>'}
-                        <span class="card-time">${timeAgo(s.timestamp)}</span>
+                    <div class="confidence"><div class="confidence-bar" style="width:${i.confidence*100}%"></div></div>
+                    <div class="card-footer">
+                        ${i.amount ? `<span class="amount">฿${i.amount}</span>` : '<span></span>'}
+                        <span class="time">${timeAgo(i.time)}</span>
                     </div>
                 </div>
             </div>
-        `).join('')}</div>`;
+        `).join('') + '</div>';
     }
     
     // Library
-    document.getElementById('folder-list').innerHTML = FOLDERS.map(f => {
-        const count = screenshots.filter(s => f.types.includes(s.type)).length;
-        return `
-            <div class="list-item">
-                <div class="list-icon">${f.icon}</div>
-                <div class="list-content">
-                    <div class="list-title">${f.name}</div>
-                    <div class="list-subtitle">${f.path}</div>
-                </div>
-                <span class="list-badge">${count}</span>
-            </div>`;
+    document.getElementById('folders').innerHTML = FOLDERS.map(f => {
+        const count = items.filter(i => f.types.includes(i.type)).length;
+        return `<div class="list-item">
+            <div class="list-icon">${ICONS[f.id]}</div>
+            <div class="list-content">
+                <div class="list-title">${f.name}</div>
+                <div class="list-sub">${count} item${count !== 1 ? 's' : ''}</div>
+            </div>
+            <span class="badge">${count}</span>
+        </div>`;
     }).join('');
     
     // Spending
-    const financial = screenshots.filter(s => s.amount);
-    const total = financial.reduce((sum, s) => sum + s.amount, 0);
-    document.getElementById('weekly-total').textContent = `฿${Math.round(total * 0.3).toLocaleString()}`;
-    document.getElementById('monthly-total').textContent = `฿${total.toLocaleString()}`;
+    const fin = items.filter(i => i.fin && i.amount);
+    const total = fin.reduce((s, i) => s + i.amount, 0);
+    const week = Math.round(total * 0.35);
     
-    // Chart bars
-    const chartBars = document.getElementById('chart-bars');
-    const dayTotals = [0.3, 0.5, 0.2, 0.8, 0.4, 0.6, 0.9].map(r => r * (total / 5) || 50);
-    const maxDay = Math.max(...dayTotals, 1);
-    chartBars.innerHTML = dayTotals.map(d => 
-        `<div class="chart-bar" style="height:${Math.max(8, (d/maxDay)*100)}%"></div>`
-    ).join('');
+    document.getElementById('spending-sub').textContent = fin.length ? fin.length + ' transactions' : 'No data yet';
+    document.getElementById('week-total').textContent = '฿' + week.toLocaleString();
+    document.getElementById('month-total').textContent = '฿' + total.toLocaleString();
     
-    // Category breakdown
+    // Chart
+    const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    const vals = days.map(() => Math.random() * total / 4);
+    const max = Math.max(...vals, 1);
+    document.getElementById('chart').innerHTML = vals.map(v => `<div class="chart-bar" style="height:${Math.max(4, v/max*100)}%"></div>`).join('');
+    document.getElementById('chart-labels').innerHTML = days.map(d => `<span class="chart-label">${d}</span>`).join('');
+    
+    // Categories
     const catTotals = {};
-    financial.forEach(s => {
-        catTotals[s.category] = (catTotals[s.category] || 0) + s.amount;
-    });
+    fin.forEach(i => catTotals[i.cat] = (catTotals[i.cat] || 0) + i.amount);
     const maxCat = Math.max(...Object.values(catTotals), 1);
-    document.getElementById('category-breakdown').innerHTML = CATEGORIES.map(c => {
+    
+    document.getElementById('categories').innerHTML = CATS.map(c => {
         const amt = catTotals[c.id] || 0;
-        return `
-            <div class="category-row">
-                <div class="category-dot" style="background:${c.color}"></div>
-                <span class="category-name" style="text-transform:capitalize">${c.id}</span>
-                <div class="category-bar"><div class="category-fill" style="width:${(amt/maxCat)*100}%;background:${c.color}"></div></div>
-                <span class="category-amount">฿${amt.toLocaleString()}</span>
-            </div>`;
+        return `<div class="cat-row">
+            <div class="cat-dot" style="background:${c.color}"></div>
+            <span class="cat-name">${c.id}</span>
+            <div class="cat-bar"><div class="cat-fill" style="width:${amt/maxCat*100}%;background:${c.color}"></div></div>
+            <span class="cat-amt">฿${amt.toLocaleString()}</span>
+        </div>`;
     }).join('');
     
     // Transactions
-    const txList = document.getElementById('tx-list');
-    if (financial.length === 0) {
-        txList.innerHTML = '<div class="empty" style="height:auto;padding:40px"><div class="empty-text">No transactions yet</div></div>';
+    const txList = document.getElementById('transactions');
+    if (!fin.length) {
+        txList.innerHTML = '<div style="text-align:center;color:var(--text2);padding:30px">No transactions yet</div>';
     } else {
-        txList.innerHTML = financial.slice(0, 10).map(s => `
-            <div class="list-item">
-                <div class="list-icon">${s.typeEmoji}</div>
-                <div class="list-content">
-                    <div class="list-title">${s.merchant}</div>
-                    <div class="list-subtitle" style="text-transform:capitalize">${s.category}</div>
-                </div>
-                <span class="list-value">฿${s.amount.toLocaleString()}</span>
+        txList.innerHTML = fin.slice(0, 8).map(i => `<div class="list-item">
+            <div class="list-icon" style="background:${i.catColor}20">${i.typeIcon}</div>
+            <div class="list-content">
+                <div class="list-title">${i.merchant}</div>
+                <div class="list-sub">${i.cat}</div>
             </div>
-        `).join('');
+            <span class="list-value">฿${i.amount}</span>
+        </div>`).join('');
     }
 }
 
-// Init
 render();
 </script>
 </body>
