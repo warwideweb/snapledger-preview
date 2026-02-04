@@ -1,11 +1,11 @@
 {
-  "name": "Stashd",
-  "short_name": "Stashd",
+  "name": "STASH'D",
+  "short_name": "STASH'D",
   "description": "Your smart screenshot stash",
   "start_url": "/snapledger-preview/",
   "display": "standalone",
   "background_color": "#000000",
-  "theme_color": "#000000",
+  "theme_color": "#f97316",
   "orientation": "portrait",
   "icons": [
     {
@@ -20,5 +20,16 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "share_target": {
+    "action": "/snapledger-preview/?share=true",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "files": [{
+        "name": "images",
+        "accept": ["image/*"]
+      }]
+    }
+  }
 }

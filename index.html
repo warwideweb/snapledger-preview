@@ -29,8 +29,8 @@
         .big-stat-label{font-size:13px;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
         .big-stat-value{font-size:48px;font-weight:700;letter-spacing:-2px}
         .big-stat-sub{font-size:14px;color:var(--text2);margin-top:4px}
-        .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 16px 20px}
-        .stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 10px;text-align:center;cursor:pointer}
+        .stats-row{display:flex;gap:10px;padding:0 16px 20px;overflow-x:auto;scroll-snap-type:x mandatory}.stats-row::-webkit-scrollbar{display:none}
+        .stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;text-align:center;cursor:pointer;min-width:90px;flex-shrink:0;scroll-snap-align:start}
         .stat-card:active{background:var(--card2)}
         .stat-icon{font-size:20px;margin-bottom:6px}
         .stat-num{font-size:18px;font-weight:700}
@@ -207,7 +207,7 @@
         <div class="screen" id="home">
             <div class="header">
                 <div class="header-row">
-                    <h1 class="header-title">Stashd</h1>
+                    <h1 class="header-title" style="display:flex;align-items:center;gap:10px"><span style="background:var(--orange);width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px">📦</span><span style="color:var(--orange);font-weight:700">STASH'D</span></h1>
                     <button class="header-btn" onclick="pickFiles()">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
                         Add
@@ -222,11 +222,9 @@
                 <div class="big-stat-sub" id="home-count">0 items</div>
             </div>
             
-            <div class="stats-row">
-                <div class="stat-card" onclick="activeFilter='product';switchTab('browse');render()"><div class="stat-icon">🛍️</div><div class="stat-num" id="stat-wants">0</div><div class="stat-label">Wants</div></div>
-                <div class="stat-card" onclick="switchTab('places')"><div class="stat-icon">📍</div><div class="stat-num" id="stat-places">0</div><div class="stat-label">Places</div></div>
-                <div class="stat-card" onclick="activeFilter='receipt';switchTab('browse');render()"><div class="stat-icon">🧾</div><div class="stat-num" id="stat-receipts">0</div><div class="stat-label">Bills</div></div>
-                <div class="stat-card" onclick="activeFilter='idea';switchTab('browse');render()"><div class="stat-icon">💡</div><div class="stat-num" id="stat-ideas">0</div><div class="stat-label">Ideas</div></div>
+            <div class="stats-row" id="stats-row">
+                <!-- Dynamically populated and sorted by count -->
+            </div>
             </div>
             
             <div class="analytics expanded" id="analytics">
@@ -521,6 +519,16 @@ async function processImage(dataUrl){
     const c=settings.useAI?await classifyWithAI(dataUrl):fallbackClassify();
     const type=TYPES[c.type]||TYPES.screenshot;
     
+    // Add coordinates if location exists but has no lat/lng (default to Bangkok area)
+    let location=c.location;
+    if(location&&location.name&&(!location.lat||!location.lng)){
+        location={
+            ...location,
+            lat:13.7563+(Math.random()-0.5)*0.1,
+            lng:100.5018+(Math.random()-0.5)*0.1
+        };
+    }
+    
     return{
         id:Date.now()+Math.random(),
         uri:dataUrl,
@@ -532,7 +540,7 @@ async function processImage(dataUrl){
         amountOriginal:c.amount,
         currencyOriginal:c.currency,
         amountConverted:c.amount&&c.currency?convertCurrency(c.amount,c.currency):null,
-        location:c.location,
+        location,
         category:c.category,
         isDuplicate:!!dupe,
         smartTags:c.smartTags||[],
@@ -790,10 +798,19 @@ function render(){
     const total=valued.reduce((s,i)=>s+i.amountConverted,0);
     document.getElementById('home-total').textContent=formatCurrency(total,settings.baseCurrency);
     document.getElementById('home-count').textContent=`${items.length} item${items.length!==1?'s':''}`;
-    document.getElementById('stat-wants').textContent=items.filter(i=>i.typeId==='product').length;
-    document.getElementById('stat-places').textContent=items.filter(i=>i.location).length;
-    document.getElementById('stat-receipts').textContent=items.filter(i=>['receipt','bill'].includes(i.typeId)).length;
-    document.getElementById('stat-ideas').textContent=items.filter(i=>i.typeId==='idea').length;
+    // Dynamic stats row sorted by count
+    const statDefs=[
+        {id:'wants',icon:'🛍️',label:'Wants',count:items.filter(i=>i.typeId==='product').length,action:"activeFilter='product';switchTab('browse');render()"},
+        {id:'places',icon:'📍',label:'Places',count:items.filter(i=>i.location).length,action:"switchTab('places')"},
+        {id:'bills',icon:'🧾',label:'Bills',count:items.filter(i=>['receipt','bill','transfer'].includes(i.typeId)).length,action:"activeFilter='receipt';switchTab('browse');render()"},
+        {id:'ideas',icon:'💡',label:'Ideas',count:items.filter(i=>i.typeId==='idea').length,action:"activeFilter='idea';switchTab('browse');render()"},
+        {id:'food',icon:'🍜',label:'Food',count:items.filter(i=>['food','cafe'].includes(i.typeId)).length,action:"activeFilter='food';switchTab('browse');render()"},
+        {id:'travel',icon:'✈️',label:'Travel',count:items.filter(i=>i.typeId==='travel').length,action:"activeFilter='travel';switchTab('browse');render()"}
+    ];
+    const sortedStats=statDefs.sort((a,b)=>b.count-a.count);
+    document.getElementById('stats-row').innerHTML=sortedStats.map(s=>
+        `<div class="stat-card" onclick="${s.action}"><div class="stat-icon">${s.icon}</div><div class="stat-num">${s.count}</div><div class="stat-label">${s.label}</div></div>`
+    ).join('');
     renderAnalytics();
     
     document.getElementById('home-recent').innerHTML=items.slice(0,5).map(i=>`<div class="list-item" onclick="openModal(${i.id})"><img src="${i.uri}" class="list-thumb"><div class="list-content"><div class="list-title">${i.noAI?'Screenshot':i.title||'Untitled'}</div><div class="list-sub">${i.noAI?`<span class="list-tag" style="background:#66666620;color:#666">📷 No AI</span>`:`<span class="list-tag" style="background:${i.type?.color||'#666'}20;color:${i.type?.color||'#666'}">${i.type?.icon} ${i.type?.label}</span>${i.smartTags?.slice(0,2).map(t=>`<span class="list-tag" style="background:#3b82f620;color:#3b82f6">${t}</span>`).join('')||''}`}${i.isDuplicate?'<span class="list-dupe">DUPE</span>':''}<span>${timeAgo(i.time)}</span></div></div>${!i.noAI&&i.amountConverted?`<span class="list-amount">${formatCurrency(i.amountConverted,settings.baseCurrency)}</span>`:''}</div>`).join('')||'<div class="empty"><div class="empty-title">No items</div></div>';
