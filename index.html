@@ -48,6 +48,23 @@
         .analytics-total{padding:20px 16px;text-align:center;border-bottom:1px solid var(--border)}
         .analytics-total-label{font-size:12px;color:var(--text2);margin-bottom:4px}
         .analytics-total-value{font-size:32px;font-weight:700}
+        .analytics-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px;border-bottom:1px solid var(--border)}
+        .mini-stat{text-align:center;padding:8px}
+        .mini-stat-value{display:block;font-size:18px;font-weight:700;color:var(--text)}
+        .mini-stat-label{font-size:10px;color:var(--text2);text-transform:uppercase}
+        .analytics-section{padding:12px 16px;border-bottom:1px solid var(--border)}
+        .analytics-section:last-child{border-bottom:none}
+        .analytics-section-title{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:10px}
+        .merchant-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
+        .merchant-item:last-child{border-bottom:none}
+        .merchant-name{font-size:14px;font-weight:500}
+        .merchant-count{font-size:11px;color:var(--text2)}
+        .merchant-total{font-size:14px;font-weight:600;color:var(--green)}
+        .daily-item{display:flex;align-items:center;gap:12px;padding:6px 0}
+        .daily-date{font-size:12px;color:var(--text2);width:60px}
+        .daily-bar{flex:1;height:8px;background:var(--card2);border-radius:4px;overflow:hidden}
+        .daily-fill{height:100%;background:var(--green);border-radius:4px}
+        .daily-amount{font-size:12px;font-weight:600;width:70px;text-align:right}
         .category-list{padding:8px 0}
         .category-item{display:flex;align-items:center;padding:12px 16px;gap:12px}
         .category-icon{font-size:20px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:var(--card2);border-radius:10px}
@@ -212,10 +229,10 @@
                 <div class="stat-card" onclick="activeFilter='idea';switchTab('browse');render()"><div class="stat-icon">💡</div><div class="stat-num" id="stat-ideas">0</div><div class="stat-label">Ideas</div></div>
             </div>
             
-            <div class="analytics" id="analytics">
+            <div class="analytics expanded" id="analytics">
                 <div class="analytics-header" onclick="toggleAnalytics()">
                     <span class="analytics-title">📊 Spending Analytics</span>
-                    <span class="analytics-toggle">Expand <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></span>
+                    <span class="analytics-toggle">Collapse <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></span>
                 </div>
                 <div class="analytics-body">
                     <div class="period-tabs">
@@ -227,7 +244,31 @@
                         <div class="analytics-total-label" id="period-label">This Week</div>
                         <div class="analytics-total-value" id="period-total">$0.00</div>
                     </div>
-                    <div class="category-list" id="category-breakdown"></div>
+                    
+                    <!-- Quick Stats Row -->
+                    <div class="analytics-stats" id="analytics-stats">
+                        <div class="mini-stat"><span class="mini-stat-value" id="stat-txns">0</span><span class="mini-stat-label">Transactions</span></div>
+                        <div class="mini-stat"><span class="mini-stat-value" id="stat-avg">$0</span><span class="mini-stat-label">Average</span></div>
+                        <div class="mini-stat"><span class="mini-stat-value" id="stat-largest">$0</span><span class="mini-stat-label">Largest</span></div>
+                    </div>
+                    
+                    <!-- Top Merchants -->
+                    <div class="analytics-section">
+                        <div class="analytics-section-title">🏪 Top Merchants</div>
+                        <div id="top-merchants"></div>
+                    </div>
+                    
+                    <!-- Category Breakdown -->
+                    <div class="analytics-section">
+                        <div class="analytics-section-title">📂 By Category</div>
+                        <div class="category-list" id="category-breakdown"></div>
+                    </div>
+                    
+                    <!-- Daily Breakdown -->
+                    <div class="analytics-section">
+                        <div class="analytics-section-title">📅 Daily Spending</div>
+                        <div id="daily-breakdown"></div>
+                    </div>
                 </div>
             </div>
             
@@ -396,35 +437,107 @@ const SMART_TAGS={
     screenshot:['reference','save','share','temp','important']
 };
 
-function generateSmartTags(typeId,amount){
-    const tags=SMART_TAGS[typeId]||['misc'];
-    const result=[];
-    result.push(tags[Math.floor(Math.random()*tags.length)]);
-    if(Math.random()>0.4)result.push(tags[Math.floor(Math.random()*tags.length)]);
-    if(amount&&amount>500)result.push('high-value');
-    if(amount&&amount<100)result.push('small');
-    const hour=new Date().getHours();
-    if(hour>=22||hour<6)result.push('late-night');
-    return[...new Set(result)].slice(0,3);
+// Real AI Classification using OpenAI Vision API
+async function classifyWithAI(imageBase64){
+    const apiKey=localStorage.getItem('stashd_apikey');
+    if(!apiKey){
+        return{type:'screenshot',title:'Add API Key for AI',amount:null,currency:'THB',location:null,category:'other',smartTags:['needs-ai'],confidence:0};
+    }
+    
+    try{
+        const response=await fetch('https://api.openai.com/v1/chat/completions',{
+            method:'POST',
+            headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},
+            body:JSON.stringify({
+                model:'gpt-4o-mini',
+                messages:[{
+                    role:'user',
+                    content:[
+                        {type:'text',text:`Analyze this image and return JSON only (no markdown):
+{
+  "type": "receipt|bill|product|food|cafe|place|travel|transfer|idea|screenshot",
+  "title": "specific name/merchant/item",
+  "amount": number or null,
+  "currency": "THB|USD|EUR",
+  "category": "food|shopping|utilities|travel|entertainment|transport|health|subscriptions|other",
+  "location": {"name":"place name"} or null,
+  "smartTags": ["tag1","tag2","tag3"],
+  "confidence": 0.0-1.0
+}
+Rules:
+- type: receipt=purchase receipt, bill=utility/invoice, product=item for sale/wishlist, food=restaurant/delivery, cafe=coffee shop, place=location/attraction, travel=booking/ticket, transfer=bank/payment, idea=note/inspiration, screenshot=other
+- title: Be specific (e.g. "Starbucks Siam Paragon" not just "Coffee")
+- amount: Extract exact number if visible, null if not
+- smartTags: 2-4 relevant tags based on actual content
+- Only include location if it's a physical place
+- If unclear, use type:screenshot with descriptive title`},
+                        {type:'image_url',image_url:{url:imageBase64,detail:'low'}}
+                    ]
+                }],
+                max_tokens:300
+            })
+        });
+        
+        const data=await response.json();
+        if(data.error){
+            console.error('OpenAI error:',data.error);
+            return fallbackClassify();
+        }
+        
+        const text=data.choices?.[0]?.message?.content||'';
+        // Parse JSON from response (handle potential markdown wrapping)
+        const jsonMatch=text.match(/\{[\s\S]*\}/);
+        if(jsonMatch){
+            const parsed=JSON.parse(jsonMatch[0]);
+            return{
+                type:parsed.type||'screenshot',
+                title:parsed.title||'Untitled',
+                amount:parsed.amount,
+                currency:parsed.currency||'THB',
+                location:parsed.location,
+                category:parsed.category||'other',
+                smartTags:parsed.smartTags||[],
+                confidence:parsed.confidence||0.8
+            };
+        }
+        return fallbackClassify();
+    }catch(err){
+        console.error('AI classification failed:',err);
+        return fallbackClassify();
+    }
 }
 
-function mockClassify(){
-    const types=Object.keys(TYPES);
-    const typeId=types[Math.floor(Math.random()*types.length)];
-    const titles={receipt:['Grab Food','Starbucks','7-Eleven'],bill:['Electric','Internet','Phone'],product:['Nike Shoes','AirPods','Watch'],food:['Sushi Place','Thai Food'],cafe:['Roots Coffee'],place:['Chatuchak'],travel:['Beach Resort'],idea:['App idea'],screenshot:['Screenshot']};
-    const hasAmount=['receipt','bill','product','transfer'].includes(typeId);
-    const isPlace=PLACE_TYPES.includes(typeId);
-    const amount=hasAmount?Math.floor(Math.random()*2000)+50:null;
-    return{type:typeId,title:titles[typeId]?.[Math.floor(Math.random()*titles[typeId].length)]||'Item',amount,currency:'THB',location:isPlace?{name:titles[typeId]?.[0]||'Place',lat:MOCK_COORDS[typeId]?.[0]||13.7563,lng:MOCK_COORDS[typeId]?.[1]||100.5018}:null,category:'other',smartTags:generateSmartTags(typeId,amount)};
+// Basic fallback when no API key
+function fallbackClassify(){
+    return{type:'screenshot',title:'Screenshot',amount:null,currency:'THB',location:null,category:'other',smartTags:['unclassified'],confidence:0};
 }
 
 async function processImage(dataUrl){
     if(settings.compress)dataUrl=await compressImage(dataUrl);
     const hash=imageHash(dataUrl);
     const dupe=findDuplicate(hash);
-    const c=mockClassify();
+    
+    // Use real AI if available
+    const c=settings.useAI?await classifyWithAI(dataUrl):fallbackClassify();
     const type=TYPES[c.type]||TYPES.screenshot;
-    return{id:Date.now()+Math.random(),uri:dataUrl,hash,time:Date.now(),typeId:c.type,type,title:c.title,amountOriginal:c.amount,currencyOriginal:c.currency||'THB',amountConverted:c.amount?convertCurrency(c.amount,c.currency||'THB'):null,location:c.location,category:c.category||'other',isDuplicate:!!dupe,smartTags:c.smartTags||[]};
+    
+    return{
+        id:Date.now()+Math.random(),
+        uri:dataUrl,
+        hash,
+        time:Date.now(),
+        typeId:c.type,
+        type,
+        title:c.title,
+        amountOriginal:c.amount,
+        currencyOriginal:c.currency||'THB',
+        amountConverted:c.amount?convertCurrency(c.amount,c.currency||'THB'):null,
+        location:c.location,
+        category:c.category||'other',
+        isDuplicate:!!dupe,
+        smartTags:c.smartTags||[],
+        confidence:c.confidence||0
+    };
 }
 
 function showProgress(current,total){
@@ -487,12 +600,57 @@ function renderAnalytics(){
     let filtered=items.filter(i=>i.amountConverted);
     if(currentPeriod==='week')filtered=filtered.filter(i=>now-i.time<week);
     else if(currentPeriod==='month')filtered=filtered.filter(i=>now-i.time<month);
+    
     const total=filtered.reduce((s,i)=>s+i.amountConverted,0);
+    const avg=filtered.length?total/filtered.length:0;
+    const largest=filtered.length?Math.max(...filtered.map(i=>i.amountConverted)):0;
+    
+    // Update totals
     document.getElementById('period-label').textContent={week:'This Week',month:'This Month',all:'All Time'}[currentPeriod];
     document.getElementById('period-total').textContent=formatCurrency(total,settings.baseCurrency);
-    const catTotals={};filtered.forEach(i=>{catTotals[i.category||'other']=(catTotals[i.category||'other']||0)+i.amountConverted;});
+    
+    // Quick stats
+    document.getElementById('stat-txns').textContent=filtered.length;
+    document.getElementById('stat-avg').textContent=formatCurrency(avg,settings.baseCurrency);
+    document.getElementById('stat-largest').textContent=formatCurrency(largest,settings.baseCurrency);
+    
+    // Top merchants
+    const merchants={};
+    filtered.forEach(i=>{
+        const name=i.title||'Unknown';
+        if(!merchants[name])merchants[name]={count:0,total:0};
+        merchants[name].count++;
+        merchants[name].total+=i.amountConverted;
+    });
+    const topMerchants=Object.entries(merchants).sort((a,b)=>b[1].total-a[1].total).slice(0,5);
+    document.getElementById('top-merchants').innerHTML=topMerchants.length?topMerchants.map(([name,data])=>
+        `<div class="merchant-item"><div><div class="merchant-name">${name}</div><div class="merchant-count">${data.count} transaction${data.count>1?'s':''}</div></div><div class="merchant-total">${formatCurrency(data.total,settings.baseCurrency)}</div></div>`
+    ).join(''):'<div style="padding:12px;text-align:center;color:var(--text2);font-size:13px">No transactions yet</div>';
+    
+    // Category breakdown
+    const catTotals={};
+    filtered.forEach(i=>{catTotals[i.category||'other']=(catTotals[i.category||'other']||0)+i.amountConverted;});
     const maxCat=Math.max(...Object.values(catTotals),1);
-    document.getElementById('category-breakdown').innerHTML=CATEGORIES.filter(c=>catTotals[c.id]).map(c=>`<div class="category-item"><div class="category-icon">${c.icon}</div><div class="category-info"><div class="category-name">${c.name}</div><div class="category-bar"><div class="category-fill" style="width:${(catTotals[c.id]/maxCat)*100}%;background:${c.color}"></div></div></div><div style="text-align:right"><div class="category-value">${formatCurrency(catTotals[c.id],settings.baseCurrency)}</div><div class="category-count">${filtered.filter(i=>i.category===c.id).length}</div></div></div>`).join('')||'<div style="padding:20px;text-align:center;color:var(--text2)">No data</div>';
+    document.getElementById('category-breakdown').innerHTML=CATEGORIES.filter(c=>catTotals[c.id]).map(c=>
+        `<div class="category-item"><div class="category-icon">${c.icon}</div><div class="category-info"><div class="category-name">${c.name}</div><div class="category-bar"><div class="category-fill" style="width:${(catTotals[c.id]/maxCat)*100}%;background:${c.color}"></div></div></div><div style="text-align:right"><div class="category-value">${formatCurrency(catTotals[c.id],settings.baseCurrency)}</div><div class="category-count">${filtered.filter(i=>i.category===c.id).length}</div></div></div>`
+    ).join('')||'<div style="padding:12px;text-align:center;color:var(--text2);font-size:13px">No categories</div>';
+    
+    // Daily breakdown (last 7 days)
+    const days={};
+    const dayNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    for(let d=0;d<7;d++){
+        const date=new Date(now-d*24*60*60*1000);
+        const key=date.toDateString();
+        days[key]={label:d===0?'Today':d===1?'Yesterday':dayNames[date.getDay()],total:0};
+    }
+    filtered.forEach(i=>{
+        const key=new Date(i.time).toDateString();
+        if(days[key])days[key].total+=i.amountConverted;
+    });
+    const maxDay=Math.max(...Object.values(days).map(d=>d.total),1);
+    document.getElementById('daily-breakdown').innerHTML=Object.entries(days).map(([key,data])=>
+        `<div class="daily-item"><span class="daily-date">${data.label}</span><div class="daily-bar"><div class="daily-fill" style="width:${(data.total/maxDay)*100}%"></div></div><span class="daily-amount">${formatCurrency(data.total,settings.baseCurrency)}</span></div>`
+    ).join('');
 }
 
 function openModal(itemId){
