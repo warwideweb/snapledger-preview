@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#000">
     <title>SnapLedger</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
@@ -19,7 +19,6 @@
             --text: #fff;
             --text2: #666;
             --text3: #444;
-            --accent: #fff;
             --green: #22c55e;
             --red: #ef4444;
             --blue: #3b82f6;
@@ -181,7 +180,7 @@
         .item-overlay {
             position: absolute;
             inset: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 50%);
+            background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 60%);
             padding: 12px;
             display: flex;
             flex-direction: column;
@@ -242,6 +241,35 @@
             font-weight: 600;
         }
         
+        .item-duplicate {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: var(--orange);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        
+        .item-processing {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--text);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
         /* Empty State */
         .empty {
             display: flex;
@@ -282,9 +310,6 @@
         
         /* List View */
         .list { padding: 0 16px; }
-        .list-section {
-            margin-bottom: 24px;
-        }
         .list-header {
             display: flex;
             align-items: center;
@@ -297,10 +322,6 @@
             color: var(--text2);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-        }
-        .list-count {
-            font-size: 12px;
-            color: var(--text3);
         }
         
         .folder {
@@ -446,10 +467,30 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
         .settings-icon svg { width: 18px; height: 18px; }
         .settings-label { font-size: 15px; }
-        .settings-value { font-size: 15px; color: var(--text2); }
+        .settings-value { 
+            font-size: 15px; 
+            color: var(--text2);
+            cursor: pointer;
+        }
+        .settings-input {
+            background: var(--card2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: var(--text);
+            font-size: 14px;
+            width: 180px;
+            text-align: right;
+        }
+        .settings-input:focus {
+            outline: none;
+            border-color: var(--blue);
+        }
+        .settings-input::placeholder { color: var(--text3); }
         
         .toggle {
             width: 52px;
@@ -460,6 +501,7 @@
             position: relative;
             cursor: pointer;
             transition: all 0.2s;
+            flex-shrink: 0;
         }
         .toggle.on { 
             background: var(--green); 
@@ -479,7 +521,21 @@
         }
         .toggle.on::after { transform: translateX(20px); }
         
-        /* Tab Bar - Modern */
+        .api-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+        .api-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--red);
+        }
+        .api-dot.active { background: var(--green); }
+        
+        /* Tab Bar */
         .tabs {
             position: fixed;
             bottom: 0;
@@ -545,14 +601,16 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            max-width: 90%;
         }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast.error { border-color: var(--red); }
         
-        /* Detail Modal */
+        /* Modal */
         .modal {
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.95);
             z-index: 1000;
             display: none;
             flex-direction: column;
@@ -578,12 +636,26 @@
             cursor: pointer;
         }
         .modal-close svg { width: 20px; height: 20px; }
+        .modal-delete {
+            width: 36px;
+            height: 36px;
+            background: rgba(239,68,68,0.2);
+            border: none;
+            border-radius: 50%;
+            color: var(--red);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .modal-delete svg { width: 18px; height: 18px; }
         .modal-img {
             flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            min-height: 0;
         }
         .modal-img img {
             max-width: 100%;
@@ -635,6 +707,23 @@
             border-color: #fff;
         }
         
+        /* Currency display */
+        .currency-row {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+        .currency-main {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--green);
+        }
+        .currency-converted {
+            font-size: 16px;
+            color: var(--text2);
+        }
+        
         #file-input { display: none; }
     </style>
 </head>
@@ -655,7 +744,7 @@
                     Add
                 </button>
                 <button class="action-btn" onclick="switchTab('library')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
                     Library
                 </button>
             </div>
@@ -679,7 +768,7 @@
         <div class="screen hidden" id="insights">
             <div class="stats-header">
                 <div class="stats-title">Total Tracked</div>
-                <div class="stats-value" id="total-value">$0</div>
+                <div class="stats-value" id="total-value">$0.00</div>
                 <div class="stats-sub" id="total-sub">0 items with values</div>
             </div>
             
@@ -707,7 +796,7 @@
             </div>
             
             <div class="list-header" style="padding: 0 20px 12px;">
-                <span class="list-title">AI Processing</span>
+                <span class="list-title">AI Integration</span>
             </div>
             <div class="settings-group">
                 <div class="settings-item">
@@ -715,27 +804,83 @@
                         <div class="settings-icon" style="background: var(--purple);">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 0-4 4v4a4 4 0 0 0 8 0V6a4 4 0 0 0-4-4z"/><path d="M12 14c-4.418 0-8 1.79-8 4v2h16v-2c0-2.21-3.582-4-8-4z"/></svg>
                         </div>
-                        <span class="settings-label">Smart Classification</span>
+                        <span class="settings-label">OpenAI API Key</span>
                     </div>
-                    <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+                    <input type="password" class="settings-input" id="api-key" placeholder="sk-..." oninput="saveApiKey()">
+                </div>
+                <div class="settings-item">
+                    <div class="settings-left">
+                        <div class="settings-icon" style="background: var(--green);">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+                        </div>
+                        <span class="settings-label">Status</span>
+                    </div>
+                    <div class="api-status">
+                        <div class="api-dot" id="api-dot"></div>
+                        <span id="api-status-text">Not configured</span>
+                    </div>
                 </div>
                 <div class="settings-item">
                     <div class="settings-left">
                         <div class="settings-icon" style="background: var(--blue);">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                         </div>
-                        <span class="settings-label">Currency Convert (USD)</span>
+                        <span class="settings-label">Use AI Classification</span>
                     </div>
-                    <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+                    <div class="toggle" id="use-ai-toggle" onclick="toggleAI()"></div>
+                </div>
+            </div>
+            
+            <div class="list-header" style="padding: 0 20px 12px;">
+                <span class="list-title">Currency</span>
+            </div>
+            <div class="settings-group">
+                <div class="settings-item">
+                    <div class="settings-left">
+                        <div class="settings-icon" style="background: var(--yellow);">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        </div>
+                        <span class="settings-label">Base Currency</span>
+                    </div>
+                    <select class="settings-input" id="base-currency" onchange="saveSettings()" style="width:100px">
+                        <option value="USD">USD</option>
+                        <option value="THB">THB</option>
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                    </select>
                 </div>
                 <div class="settings-item">
                     <div class="settings-left">
-                        <div class="settings-icon" style="background: var(--green);">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c-1.657 0-3-4.03-3-9s1.343-9 3-9m0 18c1.657 0 3-4.03 3-9s-1.343-9-3-9m-9 9a9 9 0 0 1 9-9"/></svg>
+                        <div class="settings-icon" style="background: var(--cyan);">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
                         </div>
-                        <span class="settings-label">On-device Processing</span>
+                        <span class="settings-label">THB→USD Rate</span>
                     </div>
-                    <div class="toggle" onclick="this.classList.toggle('on')"></div>
+                    <input type="number" class="settings-input" id="exchange-rate" value="35.5" step="0.1" style="width:100px" oninput="saveSettings()">
+                </div>
+            </div>
+            
+            <div class="list-header" style="padding: 0 20px 12px;">
+                <span class="list-title">Detection</span>
+            </div>
+            <div class="settings-group">
+                <div class="settings-item">
+                    <div class="settings-left">
+                        <div class="settings-icon" style="background: var(--orange);">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                        </div>
+                        <span class="settings-label">Detect Duplicates</span>
+                    </div>
+                    <div class="toggle on" id="dup-toggle" onclick="this.classList.toggle('on');saveSettings()"></div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-left">
+                        <div class="settings-icon" style="background: var(--pink);">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                        </div>
+                        <span class="settings-label">Auto-process New</span>
+                    </div>
+                    <div class="toggle on" id="auto-toggle" onclick="this.classList.toggle('on');saveSettings()"></div>
                 </div>
             </div>
             
@@ -745,21 +890,12 @@
             <div class="settings-group">
                 <div class="settings-item">
                     <div class="settings-left">
-                        <div class="settings-icon" style="background: var(--orange);">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="m22 6-10 7L2 6"/></svg>
+                        <div class="settings-icon" style="background: var(--red);">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                         </div>
-                        <span class="settings-label">iCloud Sync</span>
+                        <span class="settings-label">Clear All Data</span>
                     </div>
-                    <span class="settings-value">Connect →</span>
-                </div>
-                <div class="settings-item">
-                    <div class="settings-left">
-                        <div class="settings-icon" style="background: var(--cyan);">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg>
-                        </div>
-                        <span class="settings-label">Export Data</span>
-                    </div>
-                    <span class="settings-value">→</span>
+                    <span class="settings-value" onclick="clearData()">Clear →</span>
                 </div>
             </div>
             
@@ -769,7 +905,7 @@
             <div class="settings-group">
                 <div class="settings-item">
                     <span class="settings-label">Version</span>
-                    <span class="settings-value">2.0.0</span>
+                    <span class="settings-value">2.1.0</span>
                 </div>
             </div>
         </div>
@@ -802,7 +938,9 @@
                 <button class="modal-close" onclick="closeModal()">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                 </button>
-                <div></div>
+                <button class="modal-delete" onclick="deleteItem()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                </button>
             </div>
             <div class="modal-img"><img id="modal-image" src=""></div>
             <div class="modal-info">
@@ -810,8 +948,8 @@
                 <div class="modal-title" id="modal-title"></div>
                 <div class="modal-subtitle" id="modal-subtitle"></div>
                 <div class="modal-actions">
-                    <button class="modal-btn">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                    <button class="modal-btn" onclick="setReminder()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                         Remind
                     </button>
                     <button class="modal-btn primary" onclick="closeModal()">Done</button>
@@ -825,10 +963,20 @@
     <input type="file" id="file-input" accept="image/*" multiple>
 
 <script>
-let items = [];
+// State
+let items = JSON.parse(localStorage.getItem('snapledger_items') || '[]');
 let activeFilter = 'all';
+let currentItem = null;
+let settings = JSON.parse(localStorage.getItem('snapledger_settings') || '{}');
 
-// Smart type detection - understands EVERYTHING
+// Defaults
+settings.exchangeRate = settings.exchangeRate || 35.5;
+settings.baseCurrency = settings.baseCurrency || 'USD';
+settings.useAI = settings.useAI || false;
+settings.detectDuplicates = settings.detectDuplicates !== false;
+settings.autoProcess = settings.autoProcess !== false;
+
+// Type definitions
 const TYPES = {
     receipt: { 
         icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 3v5h5M16 13H8M16 17H8M10 9H8"/></svg>`,
@@ -883,14 +1031,99 @@ const FOLDERS = [
     { id: 'other', name: 'Other', types: ['screenshot'], color: '#6b7280' },
 ];
 
-// Mock AI classification
-function classify() {
+// Currency conversion
+function convertCurrency(amount, fromCurrency) {
+    const rate = parseFloat(settings.exchangeRate) || 35.5;
+    if (fromCurrency === 'THB' && settings.baseCurrency === 'USD') {
+        return amount / rate;
+    } else if (fromCurrency === 'USD' && settings.baseCurrency === 'THB') {
+        return amount * rate;
+    }
+    return amount;
+}
+
+function formatCurrency(amount, currency) {
+    const symbols = { USD: '$', THB: '฿', EUR: '€', GBP: '£' };
+    const symbol = symbols[currency] || currency;
+    return symbol + amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// AI Classification via OpenAI Vision API
+async function classifyWithAI(imageBase64) {
+    const apiKey = localStorage.getItem('snapledger_apikey');
+    if (!apiKey) return null;
+    
+    try {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-4o-mini',
+                messages: [{
+                    role: 'user',
+                    content: [
+                        {
+                            type: 'text',
+                            text: `Analyze this screenshot and return JSON only (no markdown):
+{
+  "type": "receipt|bill|product|transfer|idea|info|screenshot",
+  "title": "short descriptive title",
+  "amount": number or null,
+  "currency": "THB|USD|EUR|etc" or null,
+  "merchant": "store/brand name" or null,
+  "confidence": 0.0-1.0
+}
+
+Types:
+- receipt: purchase receipts, invoices
+- bill: utility bills, statements
+- product: items someone wants to buy (clothing, gadgets, etc)
+- transfer: bank transfers, payment confirmations
+- idea: concepts, notes, brainstorms
+- info: reference material, tutorials, documentation
+- screenshot: general screenshots
+
+Extract any visible price/amount. If Thai Baht, use "THB". Return valid JSON only.`
+                        },
+                        {
+                            type: 'image_url',
+                            image_url: { url: imageBase64 }
+                        }
+                    ]
+                }],
+                max_tokens: 300
+            })
+        });
+        
+        const data = await response.json();
+        if (data.error) {
+            console.error('OpenAI error:', data.error);
+            return null;
+        }
+        
+        const content = data.choices[0].message.content;
+        // Parse JSON from response (handle markdown code blocks)
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            return JSON.parse(jsonMatch[0]);
+        }
+        return null;
+    } catch (err) {
+        console.error('AI classification error:', err);
+        return null;
+    }
+}
+
+// Mock classification (fallback)
+function mockClassify() {
     const typeKeys = Object.keys(TYPES);
     const typeId = typeKeys[Math.floor(Math.random() * typeKeys.length)];
     const type = TYPES[typeId];
     
-    // Generate smart data based on type
-    let title, amount, amountUSD;
+    let title, amount, currency = 'THB';
     
     switch(typeId) {
         case 'receipt':
@@ -902,7 +1135,7 @@ function classify() {
             amount = Math.floor(Math.random() * 2000) + 200;
             break;
         case 'product':
-            title = ['Nike Air Max', 'MacBook Stand', 'Wireless Earbuds', 'Smart Watch', 'Coffee Maker'][Math.floor(Math.random() * 5)];
+            title = ['Nike Air Max', 'MacBook Stand', 'Wireless Earbuds', 'Smart Watch'][Math.floor(Math.random() * 4)];
             amount = Math.floor(Math.random() * 5000) + 500;
             break;
         case 'transfer':
@@ -919,19 +1152,82 @@ function classify() {
             title = ['Screenshot', 'Capture', 'Image'][Math.floor(Math.random() * 3)];
     }
     
-    // Convert to USD (mock rate: 35 THB = 1 USD)
-    if (amount) {
-        amountUSD = (amount / 35).toFixed(2);
+    return { type: typeId, title, amount: amount || null, currency, confidence: 0.85 + Math.random() * 0.14 };
+}
+
+// Duplicate detection (perceptual hash simulation)
+function computeSimpleHash(dataUrl) {
+    // Simple hash based on image data length and samples
+    return dataUrl.length.toString(36) + dataUrl.substr(100, 50).replace(/[^a-zA-Z0-9]/g, '').substr(0, 10);
+}
+
+function findDuplicate(hash) {
+    if (!settings.detectDuplicates) return null;
+    return items.find(i => i.hash === hash);
+}
+
+// Process image
+async function processImage(dataUrl) {
+    const hash = computeSimpleHash(dataUrl);
+    const duplicate = findDuplicate(hash);
+    
+    let classification;
+    
+    if (settings.useAI && localStorage.getItem('snapledger_apikey')) {
+        classification = await classifyWithAI(dataUrl);
+    }
+    
+    if (!classification) {
+        classification = mockClassify();
+    }
+    
+    const type = TYPES[classification.type] || TYPES.screenshot;
+    
+    // Convert amount to base currency
+    let amountOriginal = classification.amount;
+    let currencyOriginal = classification.currency || 'THB';
+    let amountConverted = null;
+    
+    if (amountOriginal) {
+        amountConverted = convertCurrency(amountOriginal, currencyOriginal);
     }
     
     return {
-        typeId,
+        id: Date.now() + Math.random(),
+        uri: dataUrl,
+        hash,
+        time: Date.now(),
+        typeId: classification.type,
         type,
-        title,
-        amount,
-        amountUSD,
-        confidence: 0.85 + Math.random() * 0.14,
+        title: classification.title,
+        merchant: classification.merchant,
+        amountOriginal,
+        currencyOriginal,
+        amountConverted,
+        confidence: classification.confidence || 0.9,
+        isDuplicate: !!duplicate,
+        duplicateOf: duplicate?.id
     };
+}
+
+// UI Functions
+function pickFiles() { document.getElementById('file-input').click(); }
+
+function toast(msg, isError = false) {
+    const t = document.getElementById('toast');
+    const icon = isError 
+        ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;color:var(--red)"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg>`
+        : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;color:var(--green)"><path d="M20 6 9 17l-5-5"/></svg>`;
+    t.innerHTML = `${icon} ${msg}`;
+    t.className = isError ? 'toast error show' : 'toast show';
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+    document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
+    document.getElementById(tab).classList.remove('hidden');
 }
 
 function timeAgo(d) {
@@ -942,75 +1238,160 @@ function timeAgo(d) {
     return Math.floor(m/1440) + 'd';
 }
 
-function pickFiles() { document.getElementById('file-input').click(); }
-
-function toast(msg) {
-    const t = document.getElementById('toast');
-    t.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;color:var(--green)"><path d="M20 6 9 17l-5-5"/></svg> ${msg}`;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-function switchTab(tab) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-    document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
-    document.getElementById(tab).classList.remove('hidden');
-}
-
 function openModal(item) {
+    currentItem = item;
     const modal = document.getElementById('modal');
     document.getElementById('modal-image').src = item.uri;
     document.getElementById('modal-type').innerHTML = `${item.type.icon} ${item.type.label}`;
     document.getElementById('modal-type').style.background = item.type.color + '30';
     document.getElementById('modal-type').style.color = item.type.color;
     document.getElementById('modal-title').textContent = item.title;
-    document.getElementById('modal-subtitle').textContent = item.amount ? `฿${item.amount.toLocaleString()} (~$${item.amountUSD})` : 'No value detected';
+    
+    let subtitle = 'No value detected';
+    if (item.amountOriginal) {
+        const orig = formatCurrency(item.amountOriginal, item.currencyOriginal);
+        const conv = formatCurrency(item.amountConverted, settings.baseCurrency);
+        subtitle = item.currencyOriginal === settings.baseCurrency 
+            ? orig 
+            : `${orig} → ${conv}`;
+    }
+    document.getElementById('modal-subtitle').textContent = subtitle;
     modal.classList.add('show');
 }
 
 function closeModal() {
     document.getElementById('modal').classList.remove('show');
+    currentItem = null;
 }
 
-document.getElementById('file-input').addEventListener('change', e => {
+function deleteItem() {
+    if (!currentItem) return;
+    items = items.filter(i => i.id !== currentItem.id);
+    saveItems();
+    closeModal();
+    render();
+    toast('Deleted');
+}
+
+function setReminder() {
+    toast('Reminders coming soon!');
+}
+
+function clearData() {
+    if (confirm('Delete all screenshots? This cannot be undone.')) {
+        items = [];
+        saveItems();
+        render();
+        toast('All data cleared');
+    }
+}
+
+// Settings
+function saveApiKey() {
+    const key = document.getElementById('api-key').value;
+    if (key) {
+        localStorage.setItem('snapledger_apikey', key);
+    } else {
+        localStorage.removeItem('snapledger_apikey');
+    }
+    updateApiStatus();
+}
+
+function toggleAI() {
+    const toggle = document.getElementById('use-ai-toggle');
+    toggle.classList.toggle('on');
+    settings.useAI = toggle.classList.contains('on');
+    saveSettings();
+}
+
+function saveSettings() {
+    settings.exchangeRate = parseFloat(document.getElementById('exchange-rate').value) || 35.5;
+    settings.baseCurrency = document.getElementById('base-currency').value;
+    settings.detectDuplicates = document.getElementById('dup-toggle').classList.contains('on');
+    settings.autoProcess = document.getElementById('auto-toggle').classList.contains('on');
+    localStorage.setItem('snapledger_settings', JSON.stringify(settings));
+    render();
+}
+
+function loadSettings() {
+    const key = localStorage.getItem('snapledger_apikey');
+    if (key) document.getElementById('api-key').value = key;
+    document.getElementById('exchange-rate').value = settings.exchangeRate;
+    document.getElementById('base-currency').value = settings.baseCurrency;
+    if (settings.useAI) document.getElementById('use-ai-toggle').classList.add('on');
+    if (!settings.detectDuplicates) document.getElementById('dup-toggle').classList.remove('on');
+    if (!settings.autoProcess) document.getElementById('auto-toggle').classList.remove('on');
+    updateApiStatus();
+}
+
+function updateApiStatus() {
+    const key = localStorage.getItem('snapledger_apikey');
+    const dot = document.getElementById('api-dot');
+    const text = document.getElementById('api-status-text');
+    if (key && key.startsWith('sk-')) {
+        dot.classList.add('active');
+        text.textContent = 'Connected';
+    } else {
+        dot.classList.remove('active');
+        text.textContent = 'Not configured';
+    }
+}
+
+function saveItems() {
+    localStorage.setItem('snapledger_items', JSON.stringify(items));
+}
+
+// File handling
+document.getElementById('file-input').addEventListener('change', async e => {
     const files = [...e.target.files];
     if (!files.length) return;
     
-    let loaded = 0;
-    files.forEach(f => {
-        const r = new FileReader();
-        r.onload = ev => {
-            items.unshift({
-                id: Date.now() + Math.random(),
-                uri: ev.target.result,
-                time: Date.now(),
-                ...classify()
-            });
-            loaded++;
-            if (loaded === files.length) {
-                render();
-                toast(files.length + ' screenshot' + (files.length > 1 ? 's' : '') + ' classified');
-            }
-        };
-        r.readAsDataURL(f);
-    });
+    toast(`Processing ${files.length} screenshot${files.length > 1 ? 's' : ''}...`);
+    
+    let processed = 0;
+    let duplicates = 0;
+    
+    for (const file of files) {
+        const dataUrl = await new Promise(resolve => {
+            const reader = new FileReader();
+            reader.onload = e => resolve(e.target.result);
+            reader.readAsDataURL(file);
+        });
+        
+        const item = await processImage(dataUrl);
+        if (item.isDuplicate) {
+            duplicates++;
+        }
+        items.unshift(item);
+        processed++;
+        render();
+    }
+    
+    saveItems();
+    
+    let msg = `${processed} classified`;
+    if (duplicates) msg += ` (${duplicates} duplicate${duplicates > 1 ? 's' : ''})`;
+    toast(msg);
+    
     e.target.value = '';
 });
 
+// Tab navigation
 document.querySelectorAll('.tab').forEach(t => {
     t.onclick = () => switchTab(t.dataset.tab);
 });
 
+// Main render function
 function render() {
     const q = document.getElementById('search').value.toLowerCase();
     
     let filtered = items;
     if (q) {
         filtered = items.filter(i => 
-            i.title.toLowerCase().includes(q) || 
-            i.type.label.toLowerCase().includes(q) ||
-            i.typeId.includes(q)
+            i.title?.toLowerCase().includes(q) || 
+            i.type?.label?.toLowerCase().includes(q) ||
+            i.typeId?.includes(q) ||
+            i.merchant?.toLowerCase().includes(q)
         );
     }
     if (activeFilter !== 'all') {
@@ -1024,7 +1405,7 @@ function render() {
     document.getElementById('filters').innerHTML = `
         <div class="filter ${activeFilter === 'all' ? 'active' : ''}" onclick="activeFilter='all';render()">All ${items.length}</div>
         ${Object.entries(typeCount).map(([id, count]) => `
-            <div class="filter ${activeFilter === id ? 'active' : ''}" onclick="activeFilter='${id}';render()">${TYPES[id].label} ${count}</div>
+            <div class="filter ${activeFilter === id ? 'active' : ''}" onclick="activeFilter='${id}';render()">${TYPES[id]?.label || id} ${count}</div>
         `).join('')}
     `;
     
@@ -1037,38 +1418,50 @@ function render() {
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
                 </div>
                 <div class="empty-title">${q ? 'No results' : 'No screenshots yet'}</div>
-                <div class="empty-text">${q ? 'Try different keywords' : 'Add screenshots and I\'ll automatically classify them'}</div>
+                <div class="empty-text">${q ? 'Try different keywords' : 'Add screenshots and AI will classify them'}</div>
                 ${!q ? '<button class="action-btn primary" onclick="pickFiles()" style="width:auto;padding:14px 28px;">Add Screenshots</button>' : ''}
             </div>
         `;
     } else {
-        content.innerHTML = `<div class="grid">${filtered.map(i => `
-            <div class="item" onclick='openModal(${JSON.stringify(i).replace(/'/g, "&#39;")})'>
+        content.innerHTML = `<div class="grid">${filtered.map(i => {
+            const displayAmount = i.amountConverted 
+                ? formatCurrency(i.amountConverted, settings.baseCurrency)
+                : null;
+            const originalAmount = i.amountOriginal && i.currencyOriginal !== settings.baseCurrency
+                ? formatCurrency(i.amountOriginal, i.currencyOriginal)
+                : null;
+            
+            return `
+            <div class="item" onclick='openModal(items.find(x=>x.id===${i.id}))'>
                 <img src="${i.uri}">
                 <div class="item-overlay">
-                    <div class="item-type" style="color:${i.type.color}">${i.type.icon}${i.type.label}</div>
-                    <div class="item-title">${i.title}</div>
+                    <div class="item-type" style="color:${i.type?.color || '#666'}">${i.type?.icon || ''}${i.type?.label || 'Unknown'}</div>
+                    <div class="item-title">${i.title || 'Untitled'}</div>
                     <div class="item-meta">
-                        ${i.amountUSD ? `<span class="item-amount">$${i.amountUSD}</span>` : '<span></span>'}
+                        ${displayAmount ? `<span class="item-amount">${displayAmount}</span>` : '<span></span>'}
                         <span class="item-time">${timeAgo(i.time)}</span>
                     </div>
                 </div>
-                ${i.amountUSD ? `<div class="item-badge" style="color:${i.type.color}">฿${i.amount?.toLocaleString()}</div>` : ''}
+                ${originalAmount ? `<div class="item-badge">${originalAmount}</div>` : ''}
+                ${i.isDuplicate ? '<div class="item-duplicate">DUPE</div>' : ''}
             </div>
-        `).join('')}</div>`;
+        `}).join('')}</div>`;
     }
     
     // Library folders
     document.getElementById('folders').innerHTML = FOLDERS.map(f => {
         const count = items.filter(i => f.types.includes(i.typeId)).length;
+        const total = items.filter(i => f.types.includes(i.typeId) && i.amountConverted)
+            .reduce((sum, i) => sum + i.amountConverted, 0);
+        
         return `
-            <div class="folder">
+            <div class="folder" onclick="activeFilter='${f.types[0]}';switchTab('main');render()">
                 <div class="folder-icon" style="background:${f.color}20;color:${f.color}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
                 </div>
                 <div class="folder-content">
                     <div class="folder-name">${f.name}</div>
-                    <div class="folder-sub">${count} item${count !== 1 ? 's' : ''}</div>
+                    <div class="folder-sub">${count} item${count !== 1 ? 's' : ''}${total ? ' · ' + formatCurrency(total, settings.baseCurrency) : ''}</div>
                 </div>
                 <span class="folder-badge">${count}</span>
             </div>
@@ -1076,13 +1469,12 @@ function render() {
     }).join('');
     
     // Insights
-    const valued = items.filter(i => i.amount);
-    const totalTHB = valued.reduce((s, i) => s + i.amount, 0);
-    const totalUSD = (totalTHB / 35).toFixed(2);
+    const valued = items.filter(i => i.amountConverted);
+    const totalConverted = valued.reduce((s, i) => s + i.amountConverted, 0);
     
-    document.getElementById('total-value').textContent = '$' + Number(totalUSD).toLocaleString();
+    document.getElementById('total-value').textContent = formatCurrency(totalConverted, settings.baseCurrency);
     document.getElementById('total-sub').textContent = valued.length + ' items with values';
-    document.getElementById('week-val').textContent = '$' + (totalUSD * 0.35).toFixed(0);
+    document.getElementById('week-val').textContent = formatCurrency(totalConverted * 0.35, settings.baseCurrency);
     document.getElementById('total-items').textContent = items.length;
     
     // Type breakdown
@@ -1090,21 +1482,23 @@ function render() {
     items.forEach(i => {
         if (!typeTotals[i.typeId]) typeTotals[i.typeId] = { count: 0, amount: 0 };
         typeTotals[i.typeId].count++;
-        if (i.amount) typeTotals[i.typeId].amount += i.amount;
+        if (i.amountConverted) typeTotals[i.typeId].amount += i.amountConverted;
     });
     
     document.getElementById('type-breakdown').innerHTML = Object.entries(typeTotals)
         .sort((a, b) => b[1].count - a[1].count)
         .map(([id, data]) => `
             <div class="cat-item">
-                <div class="cat-dot" style="background:${TYPES[id].color}"></div>
-                <span class="cat-name">${TYPES[id].label}</span>
+                <div class="cat-dot" style="background:${TYPES[id]?.color || '#666'}"></div>
+                <span class="cat-name">${TYPES[id]?.label || id}</span>
                 <span class="cat-value" style="color:var(--text2)">${data.count}</span>
-                ${data.amount ? `<span class="cat-value" style="margin-left:12px">$${(data.amount/35).toFixed(0)}</span>` : ''}
+                ${data.amount ? `<span class="cat-value" style="margin-left:12px">${formatCurrency(data.amount, settings.baseCurrency)}</span>` : ''}
             </div>
         `).join('') || '<div style="padding:20px;text-align:center;color:var(--text2)">No data yet</div>';
 }
 
+// Initialize
+loadSettings();
 render();
 </script>
 </body>
