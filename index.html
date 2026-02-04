@@ -6,10 +6,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
-    <meta name="description" content="Your smart screenshot stash - organize bills, places, wants, and ideas">
+    <meta name="description" content="Your smart screenshot stash">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     <title>Stashd</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -87,13 +88,8 @@
         .grid-amount{font-size:12px;font-weight:600;color:var(--green)}
         .grid-time{font-size:10px;color:rgba(255,255,255,0.5)}
         .grid-dupe{position:absolute;top:8px;left:8px;background:var(--orange);padding:4px 8px;border-radius:6px;font-size:10px;font-weight:600}
-        .tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
-        .auto-tag{background:var(--card2);padding:2px 6px;border-radius:4px;font-size:10px;color:var(--text2)}
-        .map-container{height:200px;background:var(--card);border:1px solid var(--border);border-radius:16px;margin:0 16px 16px;overflow:hidden;position:relative}
-        .map-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%)}
-        .map-placeholder svg{width:36px;height:36px;color:var(--text3);margin-bottom:8px}
-        .map-placeholder-text{color:var(--text2);font-size:14px}
-        .map-count{background:var(--card2);padding:6px 14px;border-radius:100px;margin-top:8px;font-size:13px}
+        .map-container{height:280px;background:var(--card);border:1px solid var(--border);border-radius:16px;margin:0 16px 16px;overflow:hidden}
+        #map{width:100%;height:100%;background:#1a1a2e}
         .place-list{padding:0 16px}
         .place-item{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:14px;cursor:pointer}
         .place-item:active{transform:scale(0.98)}
@@ -123,7 +119,7 @@
         .tab svg{width:24px;height:24px;color:var(--text3);stroke-width:1.8;margin-bottom:4px}
         .tab span{font-size:10px;font-weight:500;color:var(--text3)}
         .tab.active svg{color:var(--text)}.tab.active span{color:var(--text)}
-        .toast{position:fixed;bottom:110px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card);border:1px solid var(--border);padding:14px 24px;border-radius:14px;font-size:14px;font-weight:500;opacity:0;transition:all 0.3s;z-index:999;display:flex;align-items:center;gap:10px}
+        .toast{position:fixed;bottom:110px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card);border:1px solid var(--border);padding:14px 24px;border-radius:14px;font-size:14px;font-weight:500;opacity:0;transition:all 0.3s;z-index:999;display:flex;align-items:center;gap:10px;max-width:90%}
         .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
         .modal{position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:1000;display:none;flex-direction:column}
         .modal.show{display:flex}
@@ -140,9 +136,7 @@
         .modal-title{font-size:20px;font-weight:700;flex:1}
         .modal-edit{width:32px;height:32px;background:var(--card2);border:none;border-radius:8px;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center}
         .modal-edit svg{width:16px;height:16px}
-        .modal-subtitle{color:var(--text2);margin-bottom:8px}
-        .modal-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
-        .modal-tag{background:var(--card2);padding:6px 12px;border-radius:8px;font-size:12px;color:var(--text2)}
+        .modal-subtitle{color:var(--text2);margin-bottom:16px}
         .modal-actions{display:flex;gap:10px;flex-wrap:wrap}
         .modal-btn{flex:1;min-width:calc(50% - 5px);background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px;color:var(--text);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
         .modal-btn svg{width:18px;height:18px}
@@ -161,26 +155,32 @@
         .edit-btn{flex:1;padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none}
         .edit-btn.cancel{background:var(--card2);color:var(--text)}
         .edit-btn.save{background:#fff;color:#000}
+        .export-modal{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:1001;display:none;align-items:center;justify-content:center;padding:20px}
+        .export-modal.show{display:flex}
+        .export-box{background:var(--card);border:1px solid var(--border);border-radius:20px;width:100%;max-width:360px;padding:24px}
+        .export-title{font-size:18px;font-weight:600;margin-bottom:20px}
+        .export-options{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+        .export-option{display:flex;align-items:center;gap:12px;padding:14px;background:var(--card2);border:1px solid var(--border);border-radius:12px;cursor:pointer}
+        .export-option.selected{border-color:var(--green);background:rgba(34,197,94,0.1)}
+        .export-checkbox{width:22px;height:22px;border:2px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center}
+        .export-option.selected .export-checkbox{background:var(--green);border-color:var(--green)}
+        .export-option.selected .export-checkbox::after{content:'✓';color:#fff;font-size:14px}
+        .export-option-text{flex:1;font-size:15px}
         .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 40px;text-align:center}
         .empty-title{font-size:20px;font-weight:600;margin-bottom:8px}
         .empty-text{color:var(--text2);font-size:15px;margin-bottom:24px;max-width:260px}
-        .install-banner{background:linear-gradient(135deg,var(--orange),var(--pink));padding:16px 20px;margin:0 16px 16px;border-radius:14px;display:flex;align-items:center;gap:14px;cursor:pointer}
-        .install-banner.hidden{display:none}
-        .install-icon{font-size:28px}
-        .install-text{flex:1}
-        .install-title{font-weight:600;margin-bottom:2px}
-        .install-sub{font-size:13px;opacity:0.9}
-        .install-close{background:rgba(0,0,0,0.2);border:none;border-radius:50%;width:28px;height:28px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
+        .progress-bar{position:fixed;top:0;left:0;right:0;height:3px;background:var(--card2);z-index:2000;display:none}
+        .progress-bar.show{display:block}
+        .progress-fill{height:100%;background:var(--orange);transition:width 0.3s}
         #file-input,#import-input{display:none}
-        .processing{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:2000;display:none;align-items:center;justify-content:center;flex-direction:column}
-        .processing.show{display:flex}
-        .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin 0.8s linear infinite}
-        @keyframes spin{to{transform:rotate(360deg)}}
-        .processing-text{margin-top:16px;color:var(--text2)}
+        .leaflet-container{background:#1a1a2e!important}
+        .custom-marker{background:var(--orange);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
     </style>
 </head>
 <body>
     <div class="app">
+        <div class="progress-bar" id="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        
         <div class="screen" id="home">
             <div class="header">
                 <div class="header-row">
@@ -191,15 +191,6 @@
                     </button>
                 </div>
                 <p class="header-sub">Your screenshot stash</p>
-            </div>
-            
-            <div class="install-banner" id="install-banner" onclick="installApp()">
-                <span class="install-icon">📱</span>
-                <div class="install-text">
-                    <div class="install-title">Install Stashd</div>
-                    <div class="install-sub">Add to home screen for the best experience</div>
-                </div>
-                <button class="install-close" onclick="event.stopPropagation();hideInstall()">✕</button>
             </div>
             
             <div class="big-stat">
@@ -224,7 +215,7 @@
                     <div class="period-tabs">
                         <div class="period-tab active" onclick="setPeriod('week',this)">Week</div>
                         <div class="period-tab" onclick="setPeriod('month',this)">Month</div>
-                        <div class="period-tab" onclick="setPeriod('all',this)">All Time</div>
+                        <div class="period-tab" onclick="setPeriod('all',this)">All</div>
                     </div>
                     <div class="analytics-total">
                         <div class="analytics-total-label" id="period-label">This Week</div>
@@ -242,7 +233,7 @@
             <div class="header"><h1 class="header-title">Browse</h1></div>
             <div class="search-box">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-                <input type="text" placeholder="Search by title or tag..." id="search" oninput="render()">
+                <input type="text" placeholder="Search..." id="search" oninput="render()">
             </div>
             <div class="filters" id="filters"></div>
             <div id="browse-content"></div>
@@ -250,7 +241,7 @@
         
         <div class="screen hidden" id="places">
             <div class="header"><h1 class="header-title">Places</h1><p class="header-sub">Saved locations</p></div>
-            <div class="map-container"><div class="map-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span class="map-placeholder-text">Your saved places</span><div class="map-count" id="places-count">0 locations</div></div></div>
+            <div class="map-container"><div id="map"></div></div>
             <div class="filters" style="padding-top:0"><div class="filter active" data-filter="all">All</div><div class="filter" data-filter="food">🍜 Food</div><div class="filter" data-filter="cafe">☕ Cafes</div><div class="filter" data-filter="travel">✈️ Travel</div></div>
             <div class="place-list" id="places-list"></div>
         </div>
@@ -264,14 +255,8 @@
             </div>
             <div class="section-header"><span class="section-title">Features</span></div>
             <div class="settings-group">
-                <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--orange)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div><div><div class="settings-label">Find Similar</div><div class="settings-desc">Search matching products</div></div></div><div class="toggle on" id="find-similar-toggle" onclick="this.classList.toggle('on');saveSettings()"></div></div>
-                <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--cyan)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div><div><div class="settings-label">Duplicate Detection</div><div class="settings-desc">Warn about similar screenshots</div></div></div><div class="toggle on" id="dupe-toggle" onclick="this.classList.toggle('on');saveSettings()"></div></div>
-                <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--pink)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div><div><div class="settings-label">Smart Tags</div><div class="settings-desc">Auto-tag for better search</div></div></div><div class="toggle on" id="tags-toggle" onclick="this.classList.toggle('on');saveSettings()"></div></div>
-            </div>
-            <div class="section-header"><span class="section-title">Image Quality</span></div>
-            <div class="settings-group">
-                <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--blue)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></div><div><div class="settings-label">Compress Images</div><div class="settings-desc">Reduce file size (~50% smaller)</div></div></div><div class="toggle on" id="compress-toggle" onclick="this.classList.toggle('on');saveSettings()"></div></div>
-                <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--yellow)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg></div><span class="settings-label">Max Width</span></div><select class="settings-input" id="max-width" onchange="saveSettings()" style="width:100px"><option value="1080">1080px</option><option value="720">720px</option><option value="480">480px</option></select></div>
+                <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--cyan)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div><div><div class="settings-label">Duplicate Detection</div></div></div><div class="toggle on" id="dupe-toggle" onclick="this.classList.toggle('on');saveSettings()"></div></div>
+                <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--blue)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></div><div><div class="settings-label">Compress Images</div><div class="settings-desc">~50% smaller files</div></div></div><div class="toggle on" id="compress-toggle" onclick="this.classList.toggle('on');saveSettings()"></div></div>
             </div>
             <div class="section-header"><span class="section-title">Currency</span></div>
             <div class="settings-group">
@@ -280,9 +265,9 @@
             </div>
             <div class="section-header"><span class="section-title">Export</span></div>
             <div class="settings-group">
-                <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--red)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div><div class="settings-label">Export PDF</div><div class="settings-desc">Expense report</div></div></div><span class="settings-value" onclick="exportPDF()">Export →</span></div>
-                <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--blue)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg></div><div><div class="settings-label">Full Backup</div><div class="settings-desc">All data + images</div></div></div><span class="settings-value" onclick="exportFull()">Export →</span></div>
-                <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg></div><div><div class="settings-label">Import Backup</div><div class="settings-desc">Restore from file</div></div></div><span class="settings-value" onclick="importBackup()">Import →</span></div>
+                <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--red)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div><div class="settings-label">Export PDF Report</div><div class="settings-desc">Choose what to include</div></div></div><span class="settings-value" onclick="openExportModal()">Export →</span></div>
+                <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--blue)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg></div><div><div class="settings-label">Full Backup</div></div></div><span class="settings-value" onclick="exportFull()">Export →</span></div>
+                <div class="settings-item"><div class="settings-left"><div class="settings-icon" style="background:var(--green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg></div><div><div class="settings-label">Import Backup</div></div></div><span class="settings-value" onclick="importBackup()">Import →</span></div>
             </div>
             <div class="section-header"><span class="section-title">Data</span></div>
             <div class="settings-group">
@@ -310,7 +295,6 @@
                 <div class="modal-type" id="modal-type"></div>
                 <div class="modal-title-row"><div class="modal-title" id="modal-title"></div><button class="modal-edit" onclick="openEditModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button></div>
                 <div class="modal-subtitle" id="modal-subtitle"></div>
-                <div class="modal-tags" id="modal-tags"></div>
                 <div class="modal-actions" id="modal-actions"></div>
             </div>
         </div>
@@ -318,48 +302,54 @@
         <div class="edit-modal" id="edit-modal">
             <div class="edit-box">
                 <div class="edit-title">Edit Item</div>
-                <div class="edit-field"><div class="edit-label">Title</div><input type="text" class="edit-input" id="edit-title" placeholder="Enter title..."></div>
+                <div class="edit-field"><div class="edit-label">Title</div><input type="text" class="edit-input" id="edit-title"></div>
                 <div class="edit-field"><div class="edit-label">Amount</div><input type="number" class="edit-input" id="edit-amount" placeholder="0.00"></div>
                 <div class="edit-field"><div class="edit-label">Type</div><select class="edit-input" id="edit-type" style="width:100%"><option value="receipt">🧾 Receipt</option><option value="bill">📄 Bill</option><option value="product">🛍️ Want</option><option value="food">🍜 Food</option><option value="cafe">☕ Cafe</option><option value="place">📍 Place</option><option value="travel">✈️ Travel</option><option value="idea">💡 Idea</option><option value="screenshot">📱 Screenshot</option></select></div>
                 <div class="edit-actions"><button class="edit-btn cancel" onclick="closeEditModal()">Cancel</button><button class="edit-btn save" onclick="saveEdit()">Save</button></div>
             </div>
         </div>
         
-        <div class="processing" id="processing"><div class="spinner"></div><div class="processing-text">Processing...</div></div>
+        <div class="export-modal" id="export-modal">
+            <div class="export-box">
+                <div class="export-title">Export PDF Report</div>
+                <div class="export-options">
+                    <div class="export-option selected" data-type="receipt" onclick="toggleExportOption(this)"><div class="export-checkbox"></div><div class="export-option-text">🧾 Receipts</div></div>
+                    <div class="export-option selected" data-type="bill" onclick="toggleExportOption(this)"><div class="export-checkbox"></div><div class="export-option-text">📄 Bills</div></div>
+                    <div class="export-option" data-type="product" onclick="toggleExportOption(this)"><div class="export-checkbox"></div><div class="export-option-text">🛍️ Wants/Products</div></div>
+                    <div class="export-option" data-type="transfer" onclick="toggleExportOption(this)"><div class="export-checkbox"></div><div class="export-option-text">💸 Transfers</div></div>
+                    <div class="export-option" data-type="all" onclick="toggleExportOption(this)"><div class="export-checkbox"></div><div class="export-option-text">📱 Everything</div></div>
+                </div>
+                <div class="edit-actions"><button class="edit-btn cancel" onclick="closeExportModal()">Cancel</button><button class="edit-btn save" onclick="generatePDF()">Generate PDF</button></div>
+            </div>
+        </div>
+        
         <div class="toast" id="toast"></div>
     </div>
     
     <input type="file" id="file-input" accept="image/*" multiple>
     <input type="file" id="import-input" accept=".json">
-
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 let items=JSON.parse(localStorage.getItem('stashd_items')||'[]');
-let activeFilter='all',currentItemId=null,currentPeriod='week',deferredPrompt=null;
+let activeFilter='all',currentItemId=null,currentPeriod='week',map=null,markers=[];
 let settings=JSON.parse(localStorage.getItem('stashd_settings')||'{}');
 settings.exchangeRate=settings.exchangeRate||35.5;
 settings.baseCurrency=settings.baseCurrency||'USD';
 settings.useAI=settings.useAI||false;
-settings.findSimilar=settings.findSimilar!==false;
 settings.duplicateDetection=settings.duplicateDetection!==false;
-settings.smartTags=settings.smartTags!==false;
 settings.compress=settings.compress!==false;
-settings.maxWidth=settings.maxWidth||1080;
 
 const TYPES={receipt:{icon:'🧾',label:'Receipt',color:'#22c55e'},bill:{icon:'📄',label:'Bill',color:'#ef4444'},product:{icon:'🛍️',label:'Want',color:'#f97316'},food:{icon:'🍜',label:'Food',color:'#ec4899'},cafe:{icon:'☕',label:'Cafe',color:'#8b5cf6'},place:{icon:'📍',label:'Place',color:'#3b82f6'},travel:{icon:'✈️',label:'Travel',color:'#06b6d4'},transfer:{icon:'💸',label:'Transfer',color:'#a855f7'},idea:{icon:'💡',label:'Idea',color:'#eab308'},screenshot:{icon:'📱',label:'Screenshot',color:'#6b7280'}};
 const PLACE_TYPES=['food','cafe','place','travel'];
-const CATEGORIES=[{id:'food',name:'Food & Dining',icon:'🍜',color:'#ec4899'},{id:'shopping',name:'Shopping',icon:'🛍️',color:'#f97316'},{id:'transport',name:'Transport',icon:'🚗',color:'#22c55e'},{id:'utilities',name:'Utilities',icon:'💡',color:'#eab308'},{id:'entertainment',name:'Entertainment',icon:'🎬',color:'#a855f7'},{id:'other',name:'Other',icon:'📦',color:'#6b7280'}];
+const CATEGORIES=[{id:'food',name:'Food',icon:'🍜',color:'#ec4899'},{id:'shopping',name:'Shopping',icon:'🛍️',color:'#f97316'},{id:'transport',name:'Transport',icon:'🚗',color:'#22c55e'},{id:'utilities',name:'Utilities',icon:'💡',color:'#eab308'},{id:'other',name:'Other',icon:'📦',color:'#6b7280'}];
 
-// PWA Install
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('install-banner').classList.remove('hidden');});
-function installApp(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;hideInstall();});}}
-function hideInstall(){document.getElementById('install-banner').classList.add('hidden');localStorage.setItem('stashd_hideInstall','1');}
-if(localStorage.getItem('stashd_hideInstall')||window.matchMedia('(display-mode:standalone)').matches)document.getElementById('install-banner')?.classList.add('hidden');
+// Mock coordinates for demo
+const MOCK_COORDS={food:[13.7563,100.5018],cafe:[13.7465,100.5392],place:[13.7469,100.5349],travel:[7.8804,98.3923]};
 
-// Service Worker
 if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 
-// Image compression
-async function compressImage(dataUrl,maxWidth=1080,quality=0.7){
+async function compressImage(dataUrl,maxWidth=800,quality=0.6){
     return new Promise(resolve=>{
         const img=new Image();
         img.onload=()=>{
@@ -370,100 +360,74 @@ async function compressImage(dataUrl,maxWidth=1080,quality=0.7){
             canvas.getContext('2d').drawImage(img,0,0,w,h);
             resolve(canvas.toDataURL('image/jpeg',quality));
         };
+        img.onerror=()=>resolve(dataUrl);
         img.src=dataUrl;
     });
 }
 
-// Simple image hash for duplicate detection
-function imageHash(dataUrl){
-    const sample=dataUrl.substring(dataUrl.length-1000);
-    let hash=0;
-    for(let i=0;i<sample.length;i++){hash=((hash<<5)-hash)+sample.charCodeAt(i);hash|=0;}
-    return hash.toString(36);
-}
-
-function findDuplicate(hash){
-    if(!settings.duplicateDetection)return null;
-    return items.find(i=>i.hash===hash);
-}
-
-// Smart tags extraction
-function extractTags(title,type){
-    if(!settings.smartTags)return[];
-    const tags=[];
-    const lower=title?.toLowerCase()||'';
-    const keywords={food:['restaurant','cafe','food','eat','dinner','lunch','breakfast'],shopping:['buy','shop','store','mall','price','sale'],travel:['hotel','flight','trip','vacation','beach'],bill:['bill','payment','invoice','due']};
-    Object.entries(keywords).forEach(([cat,words])=>{words.forEach(w=>{if(lower.includes(w)&&!tags.includes(cat))tags.push(cat);});});
-    if(TYPES[type])tags.push(TYPES[type].label.toLowerCase());
-    return tags.slice(0,5);
-}
-
+function imageHash(dataUrl){let hash=0;const s=dataUrl.slice(-500);for(let i=0;i<s.length;i++){hash=((hash<<5)-hash)+s.charCodeAt(i);hash|=0;}return hash.toString(36);}
+function findDuplicate(hash){return settings.duplicateDetection?items.find(i=>i.hash===hash):null;}
 function convertCurrency(amount,from){const rate=parseFloat(settings.exchangeRate)||35.5;if(from==='THB'&&settings.baseCurrency==='USD')return amount/rate;if(from==='USD'&&settings.baseCurrency==='THB')return amount*rate;return amount;}
 function formatCurrency(amount,currency){const symbols={USD:'$',THB:'฿',EUR:'€'};return(symbols[currency]||'')+amount.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
-
-async function classifyWithAI(img){
-    const apiKey=localStorage.getItem('stashd_apikey');
-    if(!apiKey)return null;
-    try{
-        const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},body:JSON.stringify({model:'gpt-4o-mini',messages:[{role:'user',content:[{type:'text',text:`Analyze screenshot. Return JSON: {"type":"receipt|bill|product|food|cafe|place|travel|idea|screenshot","title":"title","amount":number|null,"currency":"THB|USD"|null,"location":{"name":"","address":""}|null,"category":"food|shopping|transport|utilities|entertainment|other","tags":["tag1","tag2"]}`},{type:'image_url',image_url:{url:img}}]}],max_tokens:300})});
-        const data=await r.json();
-        if(data.error)return null;
-        const match=data.choices[0].message.content.match(/\{[\s\S]*\}/);
-        return match?JSON.parse(match[0]):null;
-    }catch(e){return null;}
-}
 
 function mockClassify(){
     const types=Object.keys(TYPES);
     const typeId=types[Math.floor(Math.random()*types.length)];
-    const titles={receipt:['Grab Food','Starbucks'],bill:['Electric','Internet'],product:['Nike Shoes','AirPods'],food:['Sushi Place','Thai Restaurant'],cafe:['Roots Coffee'],place:['Chatuchak'],travel:['Beach Resort'],idea:['App idea'],screenshot:['Screenshot']};
+    const titles={receipt:['Grab Food','Starbucks','7-Eleven'],bill:['Electric','Internet','Phone'],product:['Nike Shoes','AirPods','Watch'],food:['Sushi Place','Thai Food'],cafe:['Roots Coffee'],place:['Chatuchak'],travel:['Beach Resort'],idea:['App idea'],screenshot:['Screenshot']};
     const hasAmount=['receipt','bill','product','transfer'].includes(typeId);
     const isPlace=PLACE_TYPES.includes(typeId);
-    return{type:typeId,title:titles[typeId]?.[0]||'Item',amount:hasAmount?Math.floor(Math.random()*2000)+50:null,currency:'THB',location:isPlace?{name:titles[typeId]?.[0],address:'Bangkok'}:null,category:'other',tags:[]};
+    return{type:typeId,title:titles[typeId]?.[Math.floor(Math.random()*titles[typeId].length)]||'Item',amount:hasAmount?Math.floor(Math.random()*2000)+50:null,currency:'THB',location:isPlace?{name:titles[typeId]?.[0]||'Place',lat:MOCK_COORDS[typeId]?.[0]||13.7563,lng:MOCK_COORDS[typeId]?.[1]||100.5018}:null,category:'other'};
 }
 
 async function processImage(dataUrl){
-    // Compress if enabled
-    if(settings.compress){
-        dataUrl=await compressImage(dataUrl,parseInt(settings.maxWidth)||1080);
-    }
-    
-    // Check for duplicates
+    if(settings.compress)dataUrl=await compressImage(dataUrl);
     const hash=imageHash(dataUrl);
     const dupe=findDuplicate(hash);
-    
-    let c=settings.useAI?await classifyWithAI(dataUrl):null;
-    if(!c)c=mockClassify();
-    
+    const c=mockClassify();
     const type=TYPES[c.type]||TYPES.screenshot;
-    const tags=c.tags?.length?c.tags:extractTags(c.title,c.type);
-    
-    return{
-        id:Date.now()+Math.random(),
-        uri:dataUrl,
-        hash,
-        time:Date.now(),
-        typeId:c.type,
-        type,
-        title:c.title,
-        amountOriginal:c.amount,
-        currencyOriginal:c.currency||'THB',
-        amountConverted:c.amount?convertCurrency(c.amount,c.currency||'THB'):null,
-        location:c.location,
-        category:c.category||'other',
-        tags,
-        isDuplicate:!!dupe,
-        duplicateOf:dupe?.id
-    };
+    return{id:Date.now()+Math.random(),uri:dataUrl,hash,time:Date.now(),typeId:c.type,type,title:c.title,amountOriginal:c.amount,currencyOriginal:c.currency||'THB',amountConverted:c.amount?convertCurrency(c.amount,c.currency||'THB'):null,location:c.location,category:c.category||'other',isDuplicate:!!dupe};
 }
 
-function showProcessing(show){document.getElementById('processing').classList.toggle('show',show);}
+function showProgress(current,total){
+    const bar=document.getElementById('progress-bar');
+    const fill=document.getElementById('progress-fill');
+    if(current>=total){bar.classList.remove('show');return;}
+    bar.classList.add('show');
+    fill.style.width=((current/total)*100)+'%';
+}
+
 function pickFiles(){document.getElementById('file-input').click();}
-function toast(msg){const t=document.getElementById('toast');t.innerHTML=`✓ ${msg}`;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
-function switchTab(tab){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));document.querySelector(`.tab[data-tab="${tab}"]`)?.classList.add('active');document.getElementById(tab)?.classList.remove('hidden');}
+function toast(msg){const t=document.getElementById('toast');t.textContent='✓ '+msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function switchTab(tab){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));document.querySelector(`.tab[data-tab="${tab}"]`)?.classList.add('active');document.getElementById(tab)?.classList.remove('hidden');if(tab==='places')setTimeout(initMap,100);}
 function timeAgo(d){const m=Math.floor((Date.now()-d)/60000);if(m<1)return'now';if(m<60)return m+'m';if(m<1440)return Math.floor(m/60)+'h';return Math.floor(m/1440)+'d';}
 function toggleAnalytics(){document.getElementById('analytics').classList.toggle('expanded');}
 function setPeriod(p,el){currentPeriod=p;document.querySelectorAll('.period-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderAnalytics();}
+
+function initMap(){
+    if(map)return;
+    map=L.map('map',{zoomControl:false}).setView([13.7563,100.5018],4);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'©OpenStreetMap'}).addTo(map);
+    renderMapPins();
+}
+
+function renderMapPins(){
+    if(!map)return;
+    markers.forEach(m=>map.removeLayer(m));
+    markers=[];
+    const places=items.filter(i=>i.location?.lat&&i.location?.lng);
+    if(!places.length)return;
+    
+    const bounds=[];
+    places.forEach(i=>{
+        const icon=L.divIcon({className:'',html:`<div class="custom-marker" style="background:${i.type?.color||'#f97316'}">${i.type?.icon||'📍'}</div>`,iconSize:[32,32],iconAnchor:[16,16]});
+        const marker=L.marker([i.location.lat,i.location.lng],{icon}).addTo(map);
+        marker.bindPopup(`<b>${i.title||'Place'}</b><br>${i.location.name||''}`);
+        markers.push(marker);
+        bounds.push([i.location.lat,i.location.lng]);
+    });
+    if(bounds.length>1)map.fitBounds(bounds,{padding:[30,30]});
+    else if(bounds.length===1)map.setView(bounds[0],12);
+}
 
 function renderAnalytics(){
     const now=Date.now(),week=7*24*60*60*1000,month=30*24*60*60*1000;
@@ -473,25 +437,21 @@ function renderAnalytics(){
     const total=filtered.reduce((s,i)=>s+i.amountConverted,0);
     document.getElementById('period-label').textContent={week:'This Week',month:'This Month',all:'All Time'}[currentPeriod];
     document.getElementById('period-total').textContent=formatCurrency(total,settings.baseCurrency);
-    const catTotals={};
-    filtered.forEach(i=>{catTotals[i.category||'other']=(catTotals[i.category||'other']||0)+i.amountConverted;});
+    const catTotals={};filtered.forEach(i=>{catTotals[i.category||'other']=(catTotals[i.category||'other']||0)+i.amountConverted;});
     const maxCat=Math.max(...Object.values(catTotals),1);
-    document.getElementById('category-breakdown').innerHTML=CATEGORIES.filter(c=>catTotals[c.id]).map(c=>`<div class="category-item"><div class="category-icon">${c.icon}</div><div class="category-info"><div class="category-name">${c.name}</div><div class="category-bar"><div class="category-fill" style="width:${(catTotals[c.id]/maxCat)*100}%;background:${c.color}"></div></div></div><div style="text-align:right"><div class="category-value">${formatCurrency(catTotals[c.id],settings.baseCurrency)}</div><div class="category-count">${filtered.filter(i=>i.category===c.id).length} items</div></div></div>`).join('')||'<div style="padding:20px;text-align:center;color:var(--text2)">No data</div>';
+    document.getElementById('category-breakdown').innerHTML=CATEGORIES.filter(c=>catTotals[c.id]).map(c=>`<div class="category-item"><div class="category-icon">${c.icon}</div><div class="category-info"><div class="category-name">${c.name}</div><div class="category-bar"><div class="category-fill" style="width:${(catTotals[c.id]/maxCat)*100}%;background:${c.color}"></div></div></div><div style="text-align:right"><div class="category-value">${formatCurrency(catTotals[c.id],settings.baseCurrency)}</div><div class="category-count">${filtered.filter(i=>i.category===c.id).length}</div></div></div>`).join('')||'<div style="padding:20px;text-align:center;color:var(--text2)">No data</div>';
 }
 
 function openModal(itemId){
-    const item=items.find(i=>i.id===itemId);
-    if(!item)return;
-    currentItemId=itemId;
+    const item=items.find(i=>i.id===itemId);if(!item)return;currentItemId=itemId;
     document.getElementById('modal-image').src=item.uri;
     document.getElementById('modal-type').innerHTML=`${item.type?.icon||'📱'} ${item.type?.label||'Item'}`;
     document.getElementById('modal-type').style.background=(item.type?.color||'#666')+'30';
     document.getElementById('modal-type').style.color=item.type?.color||'#666';
     document.getElementById('modal-title').textContent=item.title||'Untitled';
-    document.getElementById('modal-subtitle').textContent=item.location?.address||(item.amountOriginal?formatCurrency(item.amountOriginal,item.currencyOriginal):'No value');
-    document.getElementById('modal-tags').innerHTML=(item.tags||[]).map(t=>`<span class="modal-tag">${t}</span>`).join('');
+    document.getElementById('modal-subtitle').textContent=item.location?.name||(item.amountOriginal?formatCurrency(item.amountOriginal,item.currencyOriginal):'No value');
     let actions='';
-    if(item.typeId==='product'&&settings.findSimilar)actions+=`<button class="modal-btn blue" onclick="findSimilar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Find</button>`;
+    if(item.typeId==='product')actions+=`<button class="modal-btn blue" onclick="findSimilar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Find</button>`;
     if(item.location)actions+=`<button class="modal-btn orange" onclick="openMaps()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/></svg>Map</button>`;
     actions+=`<button class="modal-btn" onclick="openReminder()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>Remind</button>`;
     actions+=`<button class="modal-btn primary" onclick="closeModal()">Done</button>`;
@@ -502,46 +462,105 @@ function openModal(itemId){
 function closeModal(){document.getElementById('modal').classList.remove('show');currentItemId=null;}
 function openEditModal(){const item=items.find(i=>i.id===currentItemId);if(!item)return;document.getElementById('edit-title').value=item.title||'';document.getElementById('edit-amount').value=item.amountOriginal||'';document.getElementById('edit-type').value=item.typeId||'screenshot';document.getElementById('edit-modal').classList.add('show');}
 function closeEditModal(){document.getElementById('edit-modal').classList.remove('show');}
-function saveEdit(){const item=items.find(i=>i.id===currentItemId);if(!item)return;item.title=document.getElementById('edit-title').value;item.amountOriginal=parseFloat(document.getElementById('edit-amount').value)||null;item.amountConverted=item.amountOriginal?convertCurrency(item.amountOriginal,item.currencyOriginal):null;item.typeId=document.getElementById('edit-type').value;item.type=TYPES[item.typeId]||TYPES.screenshot;item.location=PLACE_TYPES.includes(item.typeId)?{name:item.title,address:''}:null;item.tags=extractTags(item.title,item.typeId);saveItems();closeEditModal();openModal(currentItemId);render();toast('Saved');}
+function saveEdit(){const item=items.find(i=>i.id===currentItemId);if(!item)return;item.title=document.getElementById('edit-title').value;item.amountOriginal=parseFloat(document.getElementById('edit-amount').value)||null;item.amountConverted=item.amountOriginal?convertCurrency(item.amountOriginal,item.currencyOriginal):null;item.typeId=document.getElementById('edit-type').value;item.type=TYPES[item.typeId]||TYPES.screenshot;if(PLACE_TYPES.includes(item.typeId)&&!item.location)item.location={name:item.title,lat:13.7563+Math.random()*0.1,lng:100.5018+Math.random()*0.1};saveItems();closeEditModal();openModal(currentItemId);render();toast('Saved');}
 function deleteCurrentItem(){if(!currentItemId)return;items=items.filter(i=>i.id!==currentItemId);saveItems();closeModal();render();toast('Deleted');}
-function findSimilar(){window.open('https://lens.google.com/','_blank');toast('Open Google Lens');}
-function openMaps(){const item=items.find(i=>i.id===currentItemId);if(!item?.location)return;window.open(`https://www.google.com/maps/search/${encodeURIComponent(item.location.name)}`,'_blank');}
-function openReminder(){const item=items.find(i=>i.id===currentItemId);if(!item)return;window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(item.title)}`,'_blank');toast('Calendar opened');}
+function findSimilar(){window.open('https://lens.google.com/','_blank');}
+function openMaps(){const item=items.find(i=>i.id===currentItemId);if(!item?.location)return;window.open(`https://www.google.com/maps/search/${encodeURIComponent(item.title)}`,'_blank');}
+function openReminder(){const item=items.find(i=>i.id===currentItemId);if(!item)return;window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(item.title)}`,'_blank');}
 
-function exportPDF(){
-    const valued=items.filter(i=>i.amountConverted);
-    const total=valued.reduce((s,i)=>s+i.amountConverted,0);
-    let html=`<html><head><title>Stashd Report</title><style>body{font-family:Arial;padding:40px}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{border:1px solid #ddd;padding:12px;text-align:left}th{background:#f5f5f5}.total{font-size:24px;margin:20px 0}</style></head><body><h1>Stashd Expense Report</h1><p>${new Date().toLocaleDateString()}</p><div class="total">Total: ${formatCurrency(total,settings.baseCurrency)}</div><table><tr><th>Date</th><th>Item</th><th>Type</th><th>Tags</th><th>Amount</th></tr>`;
-    valued.forEach(i=>{html+=`<tr><td>${new Date(i.time).toLocaleDateString()}</td><td>${i.title}</td><td>${i.type?.label||'Other'}</td><td>${(i.tags||[]).join(', ')}</td><td>${formatCurrency(i.amountConverted,settings.baseCurrency)}</td></tr>`;});
-    html+=`</table></body></html>`;
-    const w=window.open('','_blank');w.document.write(html);w.document.close();w.print();toast('Print dialog opened');
+function openExportModal(){document.getElementById('export-modal').classList.add('show');}
+function closeExportModal(){document.getElementById('export-modal').classList.remove('show');}
+function toggleExportOption(el){if(el.dataset.type==='all'){document.querySelectorAll('.export-option').forEach(o=>o.classList.remove('selected'));el.classList.add('selected');}else{document.querySelector('.export-option[data-type="all"]').classList.remove('selected');el.classList.toggle('selected');}}
+
+function generatePDF(){
+    const selectedTypes=Array.from(document.querySelectorAll('.export-option.selected')).map(o=>o.dataset.type);
+    const includeAll=selectedTypes.includes('all');
+    let filtered=items.filter(i=>i.amountConverted);
+    if(!includeAll)filtered=filtered.filter(i=>selectedTypes.includes(i.typeId));
+    const total=filtered.reduce((s,i)=>s+i.amountConverted,0);
+    
+    let html=`<!DOCTYPE html><html><head><title>Stashd Report</title><style>
+        body{font-family:Arial,sans-serif;padding:40px;max-width:800px;margin:0 auto}
+        h1{color:#333;border-bottom:2px solid #f97316;padding-bottom:10px}
+        .summary{background:#f5f5f5;padding:20px;border-radius:8px;margin:20px 0}
+        .total{font-size:32px;font-weight:bold;color:#22c55e}
+        table{width:100%;border-collapse:collapse;margin-top:20px}
+        th{background:#333;color:#fff;padding:12px;text-align:left}
+        td{border-bottom:1px solid #ddd;padding:12px}
+        .type-badge{display:inline-block;padding:4px 8px;border-radius:4px;font-size:12px}
+        .amount{font-weight:bold;color:#22c55e}
+    </style></head><body>
+    <h1>📊 Stashd Expense Report</h1>
+    <div class="summary">
+        <p>Generated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
+        <p>Items: ${filtered.length}</p>
+        <p class="total">Total: ${formatCurrency(total,settings.baseCurrency)}</p>
+    </div>
+    <table>
+        <tr><th>Date</th><th>Type</th><th>Item</th><th>Amount</th></tr>
+        ${filtered.map(i=>`<tr>
+            <td>${new Date(i.time).toLocaleDateString()}</td>
+            <td><span class="type-badge" style="background:${i.type?.color||'#666'}30;color:${i.type?.color||'#666'}">${i.type?.icon||'📱'} ${i.type?.label||'Item'}</span></td>
+            <td><strong>${i.title||'Untitled'}</strong></td>
+            <td class="amount">${formatCurrency(i.amountConverted,settings.baseCurrency)}</td>
+        </tr>`).join('')}
+    </table>
+    <p style="margin-top:40px;color:#666;font-size:12px">Generated by Stashd</p>
+    </body></html>`;
+    
+    const w=window.open('','_blank');
+    w.document.write(html);
+    w.document.close();
+    setTimeout(()=>w.print(),500);
+    closeExportModal();
+    toast('PDF ready');
 }
 
-function exportFull(){const data=JSON.stringify({version:'3.1',exported:new Date().toISOString(),settings,items},null,2);const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));a.download=`stashd-backup-${new Date().toISOString().split('T')[0]}.json`;a.click();toast('Backup downloaded');}
+function exportFull(){const data=JSON.stringify({version:'3.3',exported:new Date().toISOString(),settings,items});const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));a.download=`stashd-${new Date().toISOString().split('T')[0]}.json`;a.click();toast('Backup saved');}
 function importBackup(){document.getElementById('import-input').click();}
-document.getElementById('import-input').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{const text=await file.text();const data=JSON.parse(text);if(data.items&&Array.isArray(data.items)){if(confirm(`Import ${data.items.length} items?`)){items=[...data.items,...items];if(data.settings)Object.assign(settings,data.settings);saveItems();saveSettings();render();toast(`Imported ${data.items.length} items`);}}}catch(err){toast('Invalid file');}e.target.value='';});
-function clearData(){if(confirm('Delete all data?')){items=[];saveItems();render();toast('Cleared');}}
+document.getElementById('import-input').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{const data=JSON.parse(await file.text());if(data.items){if(confirm(`Import ${data.items.length} items?`)){items=[...data.items,...items];saveItems();render();toast(`Imported ${data.items.length}`);}}}catch(err){toast('Invalid file');}e.target.value='';});
+function clearData(){if(confirm('Delete all?')){items=[];saveItems();render();toast('Cleared');}}
 function saveApiKey(){const key=document.getElementById('api-key').value;if(key)localStorage.setItem('stashd_apikey',key);else localStorage.removeItem('stashd_apikey');}
 function toggleAI(){document.getElementById('use-ai-toggle').classList.toggle('on');settings.useAI=document.getElementById('use-ai-toggle').classList.contains('on');saveSettings();}
-function saveSettings(){settings.exchangeRate=parseFloat(document.getElementById('exchange-rate').value)||35.5;settings.baseCurrency=document.getElementById('base-currency').value;settings.findSimilar=document.getElementById('find-similar-toggle').classList.contains('on');settings.duplicateDetection=document.getElementById('dupe-toggle').classList.contains('on');settings.smartTags=document.getElementById('tags-toggle').classList.contains('on');settings.compress=document.getElementById('compress-toggle').classList.contains('on');settings.maxWidth=document.getElementById('max-width').value;localStorage.setItem('stashd_settings',JSON.stringify(settings));render();}
-function loadSettings(){const key=localStorage.getItem('stashd_apikey');if(key)document.getElementById('api-key').value=key;document.getElementById('exchange-rate').value=settings.exchangeRate;document.getElementById('base-currency').value=settings.baseCurrency;document.getElementById('max-width').value=settings.maxWidth||1080;if(settings.useAI)document.getElementById('use-ai-toggle').classList.add('on');if(!settings.findSimilar)document.getElementById('find-similar-toggle').classList.remove('on');if(!settings.duplicateDetection)document.getElementById('dupe-toggle').classList.remove('on');if(!settings.smartTags)document.getElementById('tags-toggle').classList.remove('on');if(!settings.compress)document.getElementById('compress-toggle').classList.remove('on');}
+function saveSettings(){settings.exchangeRate=parseFloat(document.getElementById('exchange-rate').value)||35.5;settings.baseCurrency=document.getElementById('base-currency').value;settings.duplicateDetection=document.getElementById('dupe-toggle').classList.contains('on');settings.compress=document.getElementById('compress-toggle').classList.contains('on');localStorage.setItem('stashd_settings',JSON.stringify(settings));render();}
+function loadSettings(){const key=localStorage.getItem('stashd_apikey');if(key)document.getElementById('api-key').value=key;document.getElementById('exchange-rate').value=settings.exchangeRate;document.getElementById('base-currency').value=settings.baseCurrency;if(settings.useAI)document.getElementById('use-ai-toggle').classList.add('on');if(!settings.duplicateDetection)document.getElementById('dupe-toggle').classList.remove('on');if(!settings.compress)document.getElementById('compress-toggle').classList.remove('on');}
 function saveItems(){localStorage.setItem('stashd_items',JSON.stringify(items));}
 
+// File upload with limit and progress
 document.getElementById('file-input').addEventListener('change',async e=>{
-    const files=[...e.target.files];
+    let files=[...e.target.files];
     if(!files.length)return;
-    showProcessing(true);
-    let dupes=0;
-    for(const file of files){
-        const dataUrl=await new Promise(r=>{const rd=new FileReader();rd.onload=e=>r(e.target.result);rd.readAsDataURL(file);});
-        const item=await processImage(dataUrl);
-        if(item.isDuplicate)dupes++;
-        items.unshift(item);
-        render();
+    
+    // Limit to 10 files
+    if(files.length>10){
+        toast('Max 10 at a time');
+        files=files.slice(0,10);
     }
+    
+    let processed=0,dupes=0;
+    for(const file of files){
+        showProgress(processed,files.length);
+        try{
+            const dataUrl=await new Promise((resolve,reject)=>{
+                const rd=new FileReader();
+                rd.onload=e=>resolve(e.target.result);
+                rd.onerror=reject;
+                rd.readAsDataURL(file);
+            });
+            const item=await processImage(dataUrl);
+            if(item.isDuplicate)dupes++;
+            items.unshift(item);
+            processed++;
+            render();
+            // Small delay to prevent UI freeze
+            await new Promise(r=>setTimeout(r,50));
+        }catch(err){
+            console.error('Failed to process',err);
+        }
+    }
+    showProgress(files.length,files.length);
     saveItems();
-    showProcessing(false);
-    toast(`${files.length} added${dupes?` (${dupes} duplicate${dupes>1?'s':''})`:''}`)
+    toast(`${processed} added${dupes?` (${dupes} dupe${dupes>1?'s':''})`:''}`)
     e.target.value='';
 });
 
@@ -551,8 +570,8 @@ document.querySelectorAll('#places .filter').forEach(f=>{f.onclick=()=>{document
 function renderPlaces(filter='all'){
     const places=items.filter(i=>i.location);
     const filtered=filter==='all'?places:places.filter(i=>i.typeId===filter);
-    document.getElementById('places-count').textContent=`${places.length} location${places.length!==1?'s':''}`;
-    document.getElementById('places-list').innerHTML=filtered.length?filtered.map(i=>`<div class="place-item" onclick="openModal(${i.id})"><div class="place-icon" style="background:${i.type?.color||'#666'}30">${i.type?.icon||'📍'}</div><div class="place-content"><div class="place-name">${i.location?.name||i.title}</div><div class="place-address">${i.location?.address||'Tap to view'}</div></div></div>`).join(''):'<div class="empty"><div class="empty-title">No places</div></div>';
+    document.getElementById('places-list').innerHTML=filtered.length?filtered.map(i=>`<div class="place-item" onclick="openModal(${i.id})"><div class="place-icon" style="background:${i.type?.color||'#666'}30">${i.type?.icon||'📍'}</div><div class="place-content"><div class="place-name">${i.title||'Untitled'}</div><div class="place-address">${i.location?.name||'Tap to view'}</div></div></div>`).join(''):'<div class="empty"><div class="empty-title">No places</div></div>';
+    renderMapPins();
 }
 
 function render(){
@@ -566,14 +585,14 @@ function render(){
     document.getElementById('stat-ideas').textContent=items.filter(i=>i.typeId==='idea').length;
     renderAnalytics();
     
-    document.getElementById('home-recent').innerHTML=items.slice(0,5).map(i=>`<div class="list-item" onclick="openModal(${i.id})"><img src="${i.uri}" class="list-thumb"><div class="list-content"><div class="list-title">${i.title||'Untitled'}</div><div class="list-sub"><span class="list-tag" style="background:${i.type?.color||'#666'}20;color:${i.type?.color||'#666'}">${i.type?.icon} ${i.type?.label}</span>${i.isDuplicate?'<span class="list-dupe">DUPE</span>':''}<span>${timeAgo(i.time)}</span></div>${i.tags?.length?`<div class="tags">${i.tags.slice(0,3).map(t=>`<span class="auto-tag">${t}</span>`).join('')}</div>`:''}</div>${i.amountConverted?`<span class="list-amount">${formatCurrency(i.amountConverted,settings.baseCurrency)}</span>`:''}</div>`).join('')||'<div class="empty"><div class="empty-title">No items</div></div>';
+    document.getElementById('home-recent').innerHTML=items.slice(0,5).map(i=>`<div class="list-item" onclick="openModal(${i.id})"><img src="${i.uri}" class="list-thumb"><div class="list-content"><div class="list-title">${i.title||'Untitled'}</div><div class="list-sub"><span class="list-tag" style="background:${i.type?.color||'#666'}20;color:${i.type?.color||'#666'}">${i.type?.icon} ${i.type?.label}</span>${i.isDuplicate?'<span class="list-dupe">DUPE</span>':''}<span>${timeAgo(i.time)}</span></div></div>${i.amountConverted?`<span class="list-amount">${formatCurrency(i.amountConverted,settings.baseCurrency)}</span>`:''}</div>`).join('')||'<div class="empty"><div class="empty-title">No items</div></div>';
     
     const typeCounts={};items.forEach(i=>typeCounts[i.typeId]=(typeCounts[i.typeId]||0)+1);
     document.getElementById('filters').innerHTML=`<div class="filter ${activeFilter==='all'?'active':''}" onclick="activeFilter='all';render()">All ${items.length}</div>${Object.entries(typeCounts).map(([id,n])=>`<div class="filter ${activeFilter===id?'active':''}" onclick="activeFilter='${id}';render()">${TYPES[id]?.icon||'📱'} ${n}</div>`).join('')}`;
     
     const q=document.getElementById('search').value.toLowerCase();
     let filtered=items;
-    if(q)filtered=items.filter(i=>(i.title||'').toLowerCase().includes(q)||(i.tags||[]).some(t=>t.includes(q)));
+    if(q)filtered=items.filter(i=>(i.title||'').toLowerCase().includes(q));
     if(activeFilter!=='all')filtered=filtered.filter(i=>i.typeId===activeFilter);
     
     document.getElementById('browse-content').innerHTML=filtered.length?`<div class="grid">${filtered.map(i=>`<div class="grid-item" onclick="openModal(${i.id})"><img src="${i.uri}">${i.isDuplicate?'<div class="grid-dupe">DUPE</div>':''}<div class="grid-overlay"><div class="grid-type" style="color:${i.type?.color||'#666'}">${i.type?.icon} ${i.type?.label}</div><div class="grid-title">${i.title||'Untitled'}</div><div class="grid-meta">${i.amountConverted?`<span class="grid-amount">${formatCurrency(i.amountConverted,settings.baseCurrency)}</span>`:'<span></span>'}<span class="grid-time">${timeAgo(i.time)}</span></div></div></div>`).join('')}</div>`:'<div class="empty"><div class="empty-title">No items</div></div>';
